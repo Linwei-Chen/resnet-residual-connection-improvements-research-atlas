@@ -1,0 +1,3776 @@
+{
+  "meta": {
+    "domain": "ResNet 残差连接改进",
+    "title": "ResNet 残差连接改进研究地图",
+    "subtitle": "从恒等捷径到缩放、路由、聚合与可逆连接的证据导航",
+    "updated": "2026-08-13",
+    "audience": "研究人员与具备基础背景的专业读者",
+    "scope_note": "覆盖 2015 年前驱至 2026-08-13，可由正式论文、DOI、作者入口或官方代码核验、且直接改变 ResNet 捷径路径、残差分支与主路径合并、路径选择、跨块拓扑或为恒等传播服务的稳定化机制的工作。仅把 ResNet 当骨干的应用、只改卷积算子/宽度/深度而不改变连接行为的变体，以及 Transformer、U-Net、GNN 等专属 skip 技巧不进入主体。少量直接替代、机制诊断和负面证据作为桥接或背景保留；不声称穷尽任务特定长尾。",
+    "axis_label": "最高已核验证据覆盖层级",
+    "overview": "残差连接的演进并非一条从简单到复杂的单线竞赛。最稳定的共识是保持跨块近恒等传播并控制残差分支幅度；随机路径和输入自适应路由利用可跳过性换取正则化或计算效率；跨层聚合与可逆设计分别改变信息复用方式和存储/可逆性约束。地图按连接机制分流，再按证据从机制分析到跨任务系统验证分层，读者可同时比较收益、代价和没有被证明的部分。",
+    "coverage_level": "L2",
+    "language": "zh-CN",
+    "thesis": "多数可迁移的改进不是削弱恒等捷径，而是让残差分支在训练早期更小、更可控，或在需要时有选择地参与计算；越复杂的门控、聚合与可逆约束越依赖特定任务和实现条件。",
+    "recommendation": "先读原始 ResNet 与 pre-activation，再沿缩放稳定化路线理解 Fixup、SkipInit 与 NFNet；需要正则化、动态计算、特征复用或内存节省时，再分别进入随机路径、自适应路由、聚合拓扑和可逆路线。",
+    "source_materials": "正式会议/期刊页、DOI、arXiv 正文、作者项目与官方代码仓库",
+    "coverage_note": "已完成查询收敛、55 个实体核验、40 个核心条目全文深读、30 条高风险主张审计、独立终稿抽查，以及桌面、375px 手机、200% 缩放和 file:// 真实浏览器验收，达到 L2。",
+    "map_center_label": "残差连接"
+  },
+  "routes": [
+    {
+      "id": "identity-projection",
+      "label": "恒等保真与投影",
+      "short": "恒等/投影",
+      "description": "调整激活与归一化次序、通道/尺度变化方式或下采样捷径，使跨块信号尽量保持无阻传播。",
+      "question": "它是否直接改善 identity shortcut 在算子次序、维度匹配或下采样处的保真度？",
+      "color": "#205B6F",
+      "text_color": "#174655",
+      "order": 0,
+      "angle": -90.0
+    },
+    {
+      "id": "residual-scaling",
+      "label": "残差更新控制与稳定化",
+      "short": "更新/稳定",
+      "description": "通过固定或可学习缩放、方向投影、初始化、归一化替代与信号传播约束，控制残差分支注入恒等状态的幅度或方向。",
+      "question": "它是否主要通过控制残差更新的幅度、方向或初始状态来稳定深度扩展？",
+      "color": "#9A5A35",
+      "text_color": "#744329",
+      "order": 1,
+      "angle": -38.571
+    },
+    {
+      "id": "stochastic-paths",
+      "label": "随机路径正则",
+      "short": "随机路径",
+      "description": "训练时随机丢弃、选择或扰动残差路径与多分支合并，以形成隐式子网络分布并抑制共适应。",
+      "question": "它是否把残差连接的路径或合并系数随机化，并把随机性作为主要正则来源？",
+      "color": "#596B3D",
+      "text_color": "#43522F",
+      "order": 2,
+      "angle": 12.857
+    },
+    {
+      "id": "adaptive-routing",
+      "label": "自适应门控与路由",
+      "short": "自适应路由",
+      "description": "依据输入、空间位置、通道或残差响应，自适应决定传递、重标定、执行或跳过哪些更新。",
+      "question": "它是否让具体样本或特征决定 residual/shortcut 的权重、执行深度或路径？",
+      "color": "#705784",
+      "text_color": "#554264",
+      "order": 3,
+      "angle": 64.286
+    },
+    {
+      "id": "aggregation-topology",
+      "label": "跨层聚合拓扑",
+      "short": "聚合拓扑",
+      "description": "把单块二路相加扩展为多层级捷径、多项式路径、稠密连接、双路复用或层次聚合。",
+      "question": "它是否主要重构跨块、跨层或多分支的连接拓扑与信息复用方式？",
+      "color": "#9A4E62",
+      "text_color": "#733A49",
+      "order": 4,
+      "angle": 115.714
+    },
+    {
+      "id": "reversible-connections",
+      "label": "可逆与信息保持",
+      "short": "可逆连接",
+      "description": "用可逆耦合或 Lipschitz 约束重写残差映射，以重建激活、保存信息或支持可逆生成。",
+      "question": "它是否以可逆性、信息不丢失或深度无关激活存储作为连接设计的首要目标？",
+      "color": "#2D6F68",
+      "text_color": "#21544F",
+      "order": 5,
+      "angle": 167.143
+    },
+    {
+      "id": "mechanism-limits",
+      "label": "机制诊断与边界",
+      "short": "诊断/边界",
+      "description": "用消融、谱分析、损失面、梯度或安全实验检验残差连接为何有效、何时失效以及常见解释的边界。",
+      "question": "它是否主要提供对连接机制的验证、反驳、风险或适用边界，而不是提出新架构？",
+      "color": "#6B6258",
+      "text_color": "#514A43",
+      "order": 6,
+      "angle": 218.571
+    }
+  ],
+  "levels": [
+    {
+      "id": 0,
+      "label": "机制与理论",
+      "short": "E0",
+      "description": "最高直接证据来自理论、初始化分析、简化模型或诊断性实验，尚无目标架构的大规模任务验证。",
+      "order": 0,
+      "radius": 88.0
+    },
+    {
+      "id": 1,
+      "label": "小型分类基准",
+      "short": "E1",
+      "description": "在 MNIST、CIFAR、SVHN、Tiny ImageNet 等小型或中型分类基准上有直接结果。",
+      "order": 1,
+      "radius": 154.0
+    },
+    {
+      "id": 2,
+      "label": "ImageNet 规模",
+      "short": "E2",
+      "description": "在 ImageNet 级大规模分类或同等级视觉训练上有直接结果，但跨任务证据有限。",
+      "order": 2,
+      "radius": 220.0
+    },
+    {
+      "id": 3,
+      "label": "跨任务或系统级",
+      "short": "E3",
+      "description": "除大规模分类外，还验证了检测、分割、生成、内存系统、安全或多个部署场景中的可迁移性与代价。",
+      "order": 3,
+      "radius": 286.0
+    }
+  ],
+  "papers": [
+    {
+      "id": "resnet-d-2019",
+      "title": "Bag of Tricks for Image Classification with Convolutional Neural Networks",
+      "title_local": "卷积网络图像分类技巧中的 ResNet-D",
+      "short_title": "ResNet-D",
+      "year": 2019,
+      "venue": "CVPR 2019",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Tong He",
+        "Zhi Zhang",
+        "Hang Zhang",
+        "Zhongyue Zhang",
+        "Junyuan Xie",
+        "Mu Li"
+      ],
+      "primary_route": "identity-projection",
+      "routes": [
+        "identity-projection"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 4,
+      "elevator": "ResNet-D 将捷径改为 2×2 average-pool stride 2 后接 stride-1 的 1×1 projection。",
+      "problem": "stride-2 的 1×1 shortcut 只采样每个 2×2 区域的一个位置。",
+      "mechanism": "ResNet-D 将捷径改为 2×2 average-pool stride 2 后接 stride-1 的 1×1 projection。",
+      "mechanism_steps": [
+        "捷径先平均池化",
+        "再做 stride-1 投影",
+        "与主支路对齐相加"
+      ],
+      "evidence": [
+        "Figure 2 明确区分 B/C/D 干预位置。",
+        "Table 5 为累积消融，D 在 B+C 上可识别边际约 +0.29 top-1，而非累计 +0.95。"
+      ],
+      "limitations": [
+        "没有 baseline+D-only 或多随机种子。",
+        "平均池化的高频代价未在本文评估。"
+      ],
+      "implications": [
+        "使阶段转换捷径保真成为独立问题。"
+      ],
+      "evidence_locations": [
+        "§4.2，Figure 2",
+        "Table 5"
+      ],
+      "tags": [
+        "下采样",
+        "投影捷径"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content_CVPR_2019/html/He_Bag_of_Tricks_for_Image_Classification_with_Convolutional_Neural_Networks_CVPR_2019_paper.html",
+      "source_note": "只把 ResNet-D shortcut 纳入连接贡献；B 改主支路，C 改 stem。",
+      "doi": "10.1109/CVPR.2019.00065"
+    },
+    {
+      "id": "pyramidnet-2017",
+      "title": "Deep Pyramidal Residual Networks",
+      "title_local": "深度金字塔残差网络",
+      "short_title": "PyramidNet",
+      "year": 2017,
+      "venue": "CVPR 2017",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Dongyoon Han",
+        "Jiwhan Kim",
+        "Junmo Kim"
+      ],
+      "primary_route": "identity-projection",
+      "routes": [
+        "identity-projection"
+      ],
+      "level": 2,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 3,
+      "elevator": "逐块平滑增加通道；旧通道沿 identity 保留，新通道由 residual branch 生成，捷径用补零匹配。",
+      "problem": "阶段边界突然加倍通道，使少数 transition blocks 承担剧烈变换。",
+      "mechanism": "逐块平滑增加通道；旧通道沿 identity 保留，新通道由 residual branch 生成，捷径用补零匹配。",
+      "mechanism_steps": [
+        "逐块增加通道",
+        "恒等保留旧通道",
+        "新增维度补零",
+        "残差支路生成新信息"
+      ],
+      "evidence": [
+        "逐块移除实验中 transition 敏感性峰值减弱。",
+        "identity mapping + zero-pad 优于全投影组合。",
+        "ImageNet-200 相比作者重训基线约改善 1.2 点。"
+      ],
+      "limitations": [
+        "宽度、补零与 block 顺序同时变，无法单因素归因。",
+        "新增通道不含前块恒等内容。"
+      ],
+      "implications": [
+        "把阶段转换确立为恒等路线的断点。"
+      ],
+      "evidence_locations": [
+        "§2.1–2.2",
+        "Figure 4",
+        "Tables 2–3、5"
+      ],
+      "tags": [
+        "补零捷径",
+        "平滑升维"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content_cvpr_2017/html/Han_Deep_Pyramidal_Residual_CVPR_2017_paper.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1109/CVPR.2017.668"
+    },
+    {
+      "id": "identity-mappings-2016",
+      "title": "Identity Mappings in Deep Residual Networks",
+      "title_local": "深度残差网络中的恒等映射",
+      "short_title": "Pre-activation ResNet",
+      "year": 2016,
+      "venue": "ECCV 2016",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Kaiming He",
+        "Xiangyu Zhang",
+        "Shaoqing Ren",
+        "Jian Sun"
+      ],
+      "primary_route": "identity-projection",
+      "routes": [
+        "identity-projection"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q3"
+      },
+      "relevance_rank": 2,
+      "elevator": "将 BN/ReLU 移到卷积前，相加后不再激活，使前向加性展开和反向直接项成立。",
+      "problem": "post-add ReLU 与非恒等 shortcut 会阻断跨多块的直接传播。",
+      "mechanism": "将 BN/ReLU 移到卷积前，相加后不再激活，使前向加性展开和反向直接项成立。",
+      "mechanism_steps": [
+        "移动 BN/ReLU 到权重层前",
+        "相加后保持恒等",
+        "展开跨块加性路径",
+        "保留不经权重层的梯度项"
+      ],
+      "evidence": [
+        "门控、0.5 缩放、全 1×1 与 dropout shortcut 都劣于恒等基线。",
+        "full pre-activation 在 CIFAR-110/164 消融中最好。",
+        "ImageNet-152 只改善约 0.2 点，200 层约 1.1 点。"
+      ],
+      "limitations": [
+        "严格推导不覆盖 transition units。",
+        "BN 位置与正则化同时变化，不能把全部收益归给捷径。"
+      ],
+      "implications": [
+        "建立保持捷径简单、把变换留在残差支路的核心原则。"
+      ],
+      "evidence_locations": [
+        "§2，式(3)–(5)",
+        "Tables 1–3、5"
+      ],
+      "tags": [
+        "预激活",
+        "无遮挡梯度"
+      ],
+      "paper_url": "https://arxiv.org/abs/1603.05027",
+      "source_note": "书目采用 ECCV 2016；公开正文为同族 arXiv，不重复计数。",
+      "doi": "10.1007/978-3-319-46493-0_38",
+      "code_url": "https://github.com/KaimingHe/resnet-1k-layers",
+      "work_family": "resnet-v1-v2"
+    },
+    {
+      "id": "critical-path-aliasing-2021",
+      "title": "Impact of Aliasing on Generalization in Deep Convolutional Networks",
+      "title_local": "混叠对深度卷积网络泛化的影响",
+      "short_title": "Critical-path anti-aliasing",
+      "year": 2021,
+      "venue": "ICCV 2021",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Cristina Vasconcelos",
+        "Hugo Larochelle",
+        "Vincent Dumoulin",
+        "Rob Romijnders",
+        "Nicolas Le Roux",
+        "Ross Goroshin"
+      ],
+      "primary_route": "identity-projection",
+      "routes": [
+        "identity-projection",
+        "mechanism-limits"
+      ],
+      "level": 3,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D3",
+        "P": "P3",
+        "Q": "Q3"
+      },
+      "relevance_rank": 6,
+      "elevator": "只在 subsampling 前可学习支持不足的 critical path 加低通；stride-2 shortcut 改成 stride-1 projection 加滤波。",
+      "problem": "全网 BlurPool 可能过早删除可学习高频，关键是临界路径而非滤波越强越好。",
+      "mechanism": "只在 subsampling 前可学习支持不足的 critical path 加低通；stride-2 shortcut 改成 stride-1 projection 加滤波。",
+      "mechanism_steps": [
+        "定位临界路径",
+        "判断可学习支持",
+        "只在不足处低通",
+        "单独审计 shortcut"
+      ],
+      "evidence": [
+        "shortcut 滤波三次均值约提升 0.6–0.7 点，全部临界路径约提升 1 点。",
+        "全层 k=7 可降到约 68%，pre+post 甚至约 61.5%。"
+      ],
+      "limitations": [
+        "最佳核与放置依赖数据和骨干。",
+        "跨论文汇总表不算统一协议。"
+      ],
+      "implications": [
+        "把抗混叠修订为位置敏感的 shortcut 设计原则。"
+      ],
+      "evidence_locations": [
+        "§3–4.3，Figure 3",
+        "Tables 1–2"
+      ],
+      "tags": [
+        "临界路径",
+        "独立反证"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content/ICCV2021/html/Vasconcelos_Impact_of_Aliasing_on_Generalization_in_Deep_Convolutional_Networks_ICCV_2021_paper.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1109/ICCV48922.2021.01036"
+    },
+    {
+      "id": "blurpool-2019",
+      "title": "Making Convolutional Networks Shift-Invariant Again",
+      "title_local": "让卷积网络重新获得平移稳定性",
+      "short_title": "BlurPool",
+      "year": 2019,
+      "venue": "ICML 2019",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Richard Zhang"
+      ],
+      "primary_route": "identity-projection",
+      "routes": [
+        "identity-projection",
+        "mechanism-limits"
+      ],
+      "level": 3,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P3",
+        "Q": "Q2"
+      },
+      "relevance_rank": 5,
+      "elevator": "将 stride 运算拆成稠密运算、固定低通和抽样；官方 ResNet 也把捷径改成 BlurPool+stride-1 projection。",
+      "problem": "未充分低通的 stride 运算让小平移引起离散输出突变，transition shortcut 同样受影响。",
+      "mechanism": "将 stride 运算拆成稠密运算、固定低通和抽样；官方 ResNet 也把捷径改成 BlurPool+stride-1 projection。",
+      "mechanism_steps": [
+        "拆分稠密运算与抽样",
+        "抽样前低通",
+        "处理主支路与 shortcut",
+        "评估一致性与鲁棒性"
+      ],
+      "evidence": [
+        "ResNet-50 的平移一致性与准确率随合适低通改善。",
+        "ImageNet-C/P 指标改善。",
+        "官方代码核实 shortcut 被直接改写。"
+      ],
+      "limitations": [
+        "无 shortcut-only 消融。",
+        "更强低通会损失高频，后续论文给出反例。"
+      ],
+      "implications": [
+        "把 ResNet-D 的经验推广为采样理论。"
+      ],
+      "evidence_locations": [
+        "§3，式(4)–(6)",
+        "Figure 6",
+        "Table 2",
+        "官方 resnet.py"
+      ],
+      "tags": [
+        "抗混叠",
+        "平移稳定"
+      ],
+      "paper_url": "https://proceedings.mlr.press/v97/zhang19a.html",
+      "source_note": "机制与指标来自 ICML 正文；shortcut 实现由作者代码交叉核验。",
+      "code_url": "https://github.com/adobe/antialiased-cnns"
+    },
+    {
+      "id": "resnet-2016",
+      "title": "Deep Residual Learning for Image Recognition",
+      "title_local": "用于图像识别的深度残差学习",
+      "short_title": "ResNet",
+      "year": 2016,
+      "venue": "CVPR 2016",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Kaiming He",
+        "Xiangyu Zhang",
+        "Shaoqing Ren",
+        "Jian Sun"
+      ],
+      "primary_route": "identity-projection",
+      "routes": [
+        "identity-projection"
+      ],
+      "level": 3,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P3",
+        "Q": "Q3"
+      },
+      "relevance_rank": 1,
+      "elevator": "尺寸相同时使用 y=x+F(x)，尺寸变化时才投影或补零；原始单元相加后仍有 ReLU。",
+      "problem": "更深 plain network 的训练误差反而上升；论文把它界定为优化退化，而不只是过拟合。",
+      "mechanism": "尺寸相同时使用 y=x+F(x)，尺寸变化时才投影或补零；原始单元相加后仍有 ReLU。",
+      "mechanism_steps": [
+        "学习残差 F(x)",
+        "形状相同时与恒等 x 相加",
+        "形状变化时投影或补零",
+        "相加后施加 ReLU"
+      ],
+      "evidence": [
+        "plain-34 比 plain-18 更难优化，而 ResNet-34 同时降低训练与测试误差。",
+        "只在升维处投影与全投影 top-1 error 相差约 0.33 点。",
+        "1202 层 CIFAR 模型训练误差极低但测试更差。"
+      ],
+      "limitations": [
+        "全网仍有非恒等 transition 和 post-add ReLU。",
+        "投影比较未严格匹配参数/计算，不能断言投影一概有害。"
+      ],
+      "implications": [
+        "定义 residual branch、identity shortcut 和 projection shortcut 三个后续研究对象。"
+      ],
+      "evidence_locations": [
+        "§3.2，式(1)–(2)",
+        "Figure 4",
+        "Tables 2–3、6"
+      ],
+      "tags": [
+        "基线",
+        "恒等捷径",
+        "投影"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html",
+      "source_note": "采用 CVPR 正式版；arXiv:1512.03385 是 2015 先行稿。",
+      "doi": "10.1109/CVPR.2016.90",
+      "work_family": "resnet-v1-v2"
+    },
+    {
+      "id": "how-to-start-2018",
+      "title": "How to Start Training: The Effect of Initialization and Architecture",
+      "title_local": "如何开始训练：初始化与架构的作用",
+      "short_title": "Residual scaling theory",
+      "year": 2018,
+      "venue": "NeurIPS 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Boris Hanin",
+        "David Rolnick"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling",
+        "mechanism-limits"
+      ],
+      "level": 0,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 9,
+      "elevator": "分析激活长度均值/方差递推，并为 residual modules 设置随深度控制的尺度。",
+      "problem": "传统权重方差规则不自动保证极深残差网的初始函数尺度稳定。",
+      "mechanism": "分析激活长度均值/方差递推，并为 residual modules 设置随深度控制的尺度。",
+      "mechanism_steps": [
+        "推导初始长度递推",
+        "识别残差爆炸条件",
+        "按深度缩放模块",
+        "用启动训练实验核对"
+      ],
+      "evidence": [
+        "对全连接、卷积和残差架构给出严格初始条件。",
+        "常见初始化违反条件，正确缩放可启动更深训练。"
+      ],
+      "limitations": [
+        "聚焦训练起点，不证明终点泛化。",
+        "分析整个模块而非新 shortcut 拓扑。"
+      ],
+      "implications": [
+        "为 Fixup 与 Stable ResNet 提供理论背景。"
+      ],
+      "evidence_locations": [
+        "主要定理与 ResNet 推论",
+        "可训练性实验"
+      ],
+      "tags": [
+        "初始化理论",
+        "激活尺度"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper_files/paper/2018/hash/d81f9c1be2e08964bf9f24b15f0e4900-Abstract.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "orthogonal-residual-update-2025",
+      "title": "Revisiting Residual Connections: Orthogonal Updates for Stable and Efficient Deep Networks",
+      "title_local": "重访残差连接：稳定高效深网的正交更新",
+      "short_title": "Orthogonal Residual Update",
+      "year": 2025,
+      "venue": "NeurIPS 2025",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Giyeong Oh",
+        "Woohyun Cho",
+        "Siyeol Kim",
+        "Suhwan Choi",
+        "Youngjae Yu"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q3"
+      },
+      "relevance_rank": 18,
+      "elevator": "计算 s=<x,F>/(||x||²+ε)，令 F⊥=F-sx，只更新 x←x+F⊥。",
+      "problem": "标准 F(x) 可能主要强化现有状态方向，浪费学习新方向的容量。",
+      "mechanism": "计算 s=<x,F>/(||x||²+ε)，令 F⊥=F-sx，只更新 x←x+F⊥。",
+      "mechanism_steps": [
+        "计算 F(x)",
+        "投影出平行分量",
+        "丢弃平行分量",
+        "只加入 F⊥"
+      ],
+      "evidence": [
+        "式(3)–(4) 和 Algorithm 1 给出实现。",
+        "5-run ResNetV2 在 CIFAR/Tiny ImageNet 多数改善，但 ResNetV2-50 CIFAR-10 略差。",
+        "CNN 吞吐开销约 3%–13%。"
+      ],
+      "limitations": [
+        "ImageNet-1k 只测 ViT，没有 CNN-ResNet ImageNet 证据。",
+        "ResNetV2 收益较小且不全为正。"
+      ],
+      "implications": [
+        "把残差控制从幅值扩展到输入相关更新方向。"
+      ],
+      "evidence_locations": [
+        "§3.1–3.3，式(3)–(4)",
+        "Tables 1–2",
+        "§4.1–4.2"
+      ],
+      "tags": [
+        "正交投影",
+        "2025 前沿"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper_files/paper/2025/hash/67c15da4a9340140c60783d9a175fd3f-Abstract-Conference.html",
+      "source_note": "全文核验纠正摘要易造成的“ResNet 也有 ImageNet”误读，故定为 E1。",
+      "doi": "10.52202/085713-2409"
+    },
+    {
+      "id": "scaling-large-depth-2025",
+      "title": "Scaling ResNets in the Large-depth Regime",
+      "title_local": "大深度极限下的 ResNet 缩放",
+      "short_title": "Large-depth scaling",
+      "year": 2025,
+      "venue": "JMLR 2025",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Pierre Marion",
+        "Adeline Fermanian",
+        "Gérard Biau",
+        "Jean-Philippe Vert"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling",
+        "mechanism-limits"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 17,
+      "elevator": "联合分析 α_L 与权重沿深度的正则性：i.i.d. 初始化只有 1/√L 非平凡，ODE 极限需相关权重与 1/L。",
+      "problem": "1/√L 与 1/L 结论常忽略层间权重相关性，连续极限解释因而冲突。",
+      "mechanism": "联合分析 α_L 与权重沿深度的正则性：i.i.d. 初始化只有 1/√L 非平凡，ODE 极限需相关权重与 1/L。",
+      "mechanism_steps": [
+        "指定 α_L",
+        "区分独立与相关权重",
+        "推导爆炸/恒等/非平凡极限",
+        "扫描两参数区域"
+      ],
+      "evidence": [
+        "主定理给出 i.i.d. 下 1/√L 的非平凡随机极限。",
+        "1/L ODE 极限要求相关/平滑初始化。",
+        "实验显示缩放与权重正则性共同影响性能。"
+      ],
+      "limitations": [
+        "特定概率极限不是所有有限深度 BN-ResNet 调参规则。",
+        "没有现代 ImageNet 统一横评。"
+      ],
+      "implications": [
+        "把残差缩放与 ODE/SDE 的适用条件绑定。"
+      ],
+      "evidence_locations": [
+        "主要定理",
+        "连续极限章节",
+        "实验章节"
+      ],
+      "tags": [
+        "1/√L",
+        "ODE",
+        "SDE"
+      ],
+      "paper_url": "https://www.jmlr.org/papers/v26/22-0664.html",
+      "source_note": "采用 JMLR 2025 正式卷期；提交年份不替代书目年份。"
+    },
+    {
+      "id": "rezero-2021",
+      "title": "ReZero is All You Need: Fast Convergence at Large Depth",
+      "title_local": "ReZero：大深度网络的快速收敛",
+      "short_title": "ReZero",
+      "year": 2021,
+      "venue": "UAI 2021",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Thomas Bachlechner",
+        "Bodhisattwa Prasad Majumder",
+        "Henry Mao",
+        "Gary Cottrell",
+        "Julian McAuley"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q3"
+      },
+      "relevance_rank": 12,
+      "elevator": "每块用 x+αF(x)，α 可学习且初值为零。",
+      "problem": "深网初始 Jacobian 偏离动态等距，希望用最小连接修改恢复恒等起点。",
+      "mechanism": "每块用 x+αF(x)，α 可学习且初值为零。",
+      "mechanism_steps": [
+        "加入单标量 α",
+        "α 初始化为 0",
+        "先学习门再启用分支",
+        "保留恒等捷径"
+      ],
+      "evidence": [
+        "补充 Table 2 报告多次运行与标准误。",
+        "ResNet-56 error 从 6.27 变成 6.58，反而恶化；更深 pre-activation 模型多改善。",
+        "结果对 PyTorch 默认初始化版本敏感。"
+      ],
+      "limitations": [
+        "CNN 证据主要是 CIFAR。",
+        "与 SkipInit 方程近同构，收益不单调。"
+      ],
+      "implications": [
+        "强化零门谱系并揭示实现敏感性。"
+      ],
+      "evidence_locations": [
+        "模型定义",
+        "补充 D.7、E，Table 2"
+      ],
+      "tags": [
+        "动态等距",
+        "零门",
+        "反例"
+      ],
+      "paper_url": "https://proceedings.mlr.press/v161/bachlechner21a.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "stable-resnet-2021",
+      "title": "Stable ResNet",
+      "title_local": "稳定残差网络",
+      "short_title": "Stable ResNet",
+      "year": 2021,
+      "venue": "AISTATS 2021",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Soufiane Hayou",
+        "Eugenio Clerico",
+        "Bobby He",
+        "George Deligiannidis",
+        "Arnaud Doucet",
+        "Judith Rousseau"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 13,
+      "elevator": "令 y_l=y_{l-1}+λ_lF_l，要求 Σλ² 有界；均匀方案为 1/√L，也给递减序列。",
+      "problem": "未缩放的无限深 ResNet 相关核会退化，梯度上界随深度指数增长。",
+      "mechanism": "令 y_l=y_{l-1}+λ_lF_l，要求 Σλ² 有界；均匀方案为 1/√L，也给递减序列。",
+      "mechanism_steps": [
+        "设置每层 λ",
+        "约束 Σλ²",
+        "构造均匀或递减缩放",
+        "比较核、梯度与任务"
+      ],
+      "evidence": [
+        "Proposition 1 的深度因子由 exp(cΣλ²) 控制。",
+        "CIFAR/Tiny ImageNet 三次运行中稳定缩放通常优于 unscaled。"
+      ],
+      "limitations": [
+        "核心定理依赖无限宽初始化极限。",
+        "无 ImageNet-1k，有限宽并非充分必要。"
+      ],
+      "implications": [
+        "把经验缩放提升为大深度理论条件。"
+      ],
+      "evidence_locations": [
+        "Proposition 1",
+        "Tables 2–3"
+      ],
+      "tags": [
+        "1/√L",
+        "无限宽"
+      ],
+      "paper_url": "https://proceedings.mlr.press/v130/hayou21a.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "weighted-residuals-2016",
+      "title": "Weighted Residuals for Very Deep Networks",
+      "title_local": "超深网络的加权残差",
+      "short_title": "Weighted Residuals",
+      "year": 2016,
+      "venue": "ICSAI 2016",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Falong Shen",
+        "Rui Gan",
+        "Gang Zeng"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling"
+      ],
+      "level": 1,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 8,
+      "elevator": "使用 x_{l+1}=x_l+λ_lF_l(x_l)，λ 零初始化、约束在 (-1,1)，并移除 post-add ReLU。",
+      "problem": "超深残差叠加与 post-add 非线性仍妨碍优化，希望学习每块更新步长。",
+      "mechanism": "使用 x_{l+1}=x_l+λ_lF_l(x_l)，λ 零初始化、约束在 (-1,1)，并移除 post-add ReLU。",
+      "mechanism_steps": [
+        "移除相加后 ReLU",
+        "加入分支标量 λ",
+        "λ 零初始化",
+        "投影 SGD 约束 λ"
+      ],
+      "evidence": [
+        "1192 层 CIFAR-10 WResNet 报告 94.9%，联合 dropout 95.3%。",
+        "正文展示收敛与学习权重。"
+      ],
+      "limitations": [
+        "只测 CIFAR-10，最佳结果混入 dropout/stochastic depth。",
+        "正式三作者与 arXiv 两作者不同。"
+      ],
+      "implications": [
+        "是 SkipInit/ReZero 前的零标量先驱。"
+      ],
+      "evidence_locations": [
+        "§3.1–3.3，式(2)",
+        "Figure 6",
+        "Table 2"
+      ],
+      "tags": [
+        "可学习标量",
+        "零初始化"
+      ],
+      "paper_url": "https://doi.org/10.1109/ICSAI.2016.7811085",
+      "source_note": "书目采用 ICSAI 正式三作者版；arXiv:1605.08831 是两作者初稿。",
+      "doi": "10.1109/ICSAI.2016.7811085"
+    },
+    {
+      "id": "nf-resnet-2021",
+      "title": "Characterizing Signal Propagation to Close the Performance Gap in Unnormalized ResNets",
+      "title_local": "用信号传播分析弥合无归一化 ResNet 的性能差距",
+      "short_title": "NF-ResNet",
+      "year": 2021,
+      "venue": "ICLR 2021",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Andrew Brock",
+        "Soham De",
+        "Samuel L. Smith"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling",
+        "identity-projection"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q3"
+      },
+      "relevance_rank": 14,
+      "elevator": "采用 x+αf(x/β)：固定 α 控制增量，递推 β 预测尺度，并在 transition 重置；Scaled WS 为配套。",
+      "problem": "Fixup/SkipInit 可启动训练，但方差漂移、激活均值和 transition reset 仍未解决。",
+      "mechanism": "采用 x+αf(x/β)：固定 α 控制增量，递推 β 预测尺度，并在 transition 重置；Scaled WS 为配套。",
+      "mechanism_steps": [
+        "固定 α",
+        "递推 β",
+        "以 x/β 输入支路",
+        "转换处重置",
+        "Scaled WS 控制均值"
+      ],
+      "evidence": [
+        "ImageNet 5 seeds 中 NF-ResNet-50/101/200 略高于对应 BN。",
+        "batch-size stress 中 batch 4 仍稳定。",
+        "未正则化 NF-ResNet-288 五次中两次崩溃。"
+      ],
+      "limitations": [
+        "α/β、Scaled WS、SkipInit 与正则化强耦合。",
+        "EfficientNet 和强增强存在失败边界。"
+      ],
+      "implications": [
+        "将恒等起点扩展为训练全程的信号能量管理。"
+      ],
+      "evidence_locations": [
+        "信号传播推导",
+        "Tables 1–2"
+      ],
+      "tags": [
+        "Normalizer-Free",
+        "方差递推"
+      ],
+      "paper_url": "https://openreview.net/forum?id=IX3Nnir2omJ",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "skipinit-2020",
+      "title": "Batch Normalization Biases Residual Blocks Towards the Identity Function in Deep Networks",
+      "title_local": "批归一化使深层残差块偏向恒等函数",
+      "short_title": "SkipInit",
+      "year": 2020,
+      "venue": "NeurIPS 2020",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Soham De",
+        "Samuel L. Smith"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling",
+        "mechanism-limits"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D3",
+        "P": "P2",
+        "Q": "Q3"
+      },
+      "relevance_rank": 11,
+      "elevator": "测量 BN 分支相对捷径的方差衰减；在无 BN 分支末端加入零初始化 α。",
+      "problem": "需要拆分 BN 在 ResNet 中的恒等偏置、稳定性和小批量正则化作用。",
+      "mechanism": "测量 BN 分支相对捷径的方差衰减；在无 BN 分支末端加入零初始化 α。",
+      "mechanism_steps": [
+        "测量残差/捷径相对方差",
+        "加入分支标量 α",
+        "α 零初始化",
+        "比较稳定与泛化"
+      ],
+      "evidence": [
+        "深度 1000 时 SkipInit 保持可训练，α=1 和简单 1/√2 失败。",
+        "去 weight decay 后精度显著下降。",
+        "复核显示 Fixup 最后层置零或深度缩放任选其一即可稳定。"
+      ],
+      "limitations": [
+        "主证据以 CIFAR 和 ResNet-v2 为主。",
+        "BN 在小批量下仍有泛化优势。"
+      ],
+      "implications": [
+        "把恒等起点转为可测机制并独立修订 Fixup。"
+      ],
+      "evidence_locations": [
+        "理论推导",
+        "Table 1",
+        "Figure 3",
+        "Fixup 复核"
+      ],
+      "tags": [
+        "BN 机制",
+        "零门"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper/2020/hash/e6b738eca0e6792ba8a9cbcba6c1881d-Abstract.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "fixup-2019",
+      "title": "Fixup Initialization: Residual Learning Without Normalization",
+      "title_local": "Fixup 初始化：无归一化的残差学习",
+      "short_title": "Fixup",
+      "year": 2019,
+      "venue": "ICLR 2019",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Hongyi Zhang",
+        "Yann N. Dauphin",
+        "Tengyu Ma"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q3"
+      },
+      "relevance_rank": 10,
+      "elevator": "最后层置零，其余权重乘 L^{-1/(2m-2)}，并加入分支 multiplier 与标量 bias。",
+      "problem": "无归一化 ResNet 的单步函数更新会随深度失控。",
+      "mechanism": "最后层置零，其余权重乘 L^{-1/(2m-2)}，并加入分支 multiplier 与标量 bias。",
+      "mechanism_steps": [
+        "分支末层和分类层置零",
+        "按深度缩放其余权重",
+        "加入 multiplier",
+        "层前加入 bias"
+      ],
+      "evidence": [
+        "CIFAR 上最深至 10,000 层可启动训练。",
+        "ImageNet ResNet-50 Fixup-alone error 27.6，明显差于 BN 23.6；加 mixup 为 24.0。",
+        "ResNet-101 Fixup+mixup 仍差 BN+mixup 约 0.6。"
+      ],
+      "limitations": [
+        "可优化不等于追平 BN 泛化。",
+        "SkipInit 后续证明部分规则非必要。"
+      ],
+      "implications": [
+        "证明归一化不是优化的逻辑必要条件，但其正则化功能未被完全替代。"
+      ],
+      "evidence_locations": [
+        "§3",
+        "Figure 3",
+        "Tables 1–2"
+      ],
+      "tags": [
+        "无归一化",
+        "深度缩放",
+        "负面结果"
+      ],
+      "paper_url": "https://openreview.net/forum?id=H1gsz30cKX",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "inception-resnet-scaling-2017",
+      "title": "Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning",
+      "title_local": "Inception-v4、Inception-ResNet 与残差连接对学习的影响",
+      "short_title": "Inception-ResNet scaling",
+      "year": 2017,
+      "venue": "AAAI 2017",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Christian Szegedy",
+        "Sergey Ioffe",
+        "Vincent Vanhoucke",
+        "Alexander A. Alemi"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling"
+      ],
+      "level": 2,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 7,
+      "elevator": "相加前将 F(x) 固定乘 0.1–0.3，保留 x 恒等传播并限制单步扰动。",
+      "problem": "极宽 Inception-ResNet 的残差通道超过约 1000 时会早期失稳。",
+      "mechanism": "相加前将 F(x) 固定乘 0.1–0.3，保留 x 恒等传播并限制单步扰动。",
+      "mechanism_steps": [
+        "计算宽残差 F(x)",
+        "乘固定小系数",
+        "与恒等状态相加"
+      ],
+      "evidence": [
+        "缩放小节记录未缩放模型激活死亡，而降低学习率或增加 BN 不可靠。",
+        "残差版本收敛更快，但同规模终点差异很小。"
+      ],
+      "limitations": [
+        "没有 α 单因素表或多随机种子。",
+        "不是标准 ResNet，宏结构混杂。"
+      ],
+      "implications": [
+        "提供早期大规模 residual scaling 经验。"
+      ],
+      "evidence_locations": [
+        "Scaling of the Residuals",
+        "Table 1"
+      ],
+      "tags": [
+        "固定缩放",
+        "宽残差"
+      ],
+      "paper_url": "https://ojs.aaai.org/index.php/aaai/article/view/11231",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1609/aaai.v31i1.11231"
+    },
+    {
+      "id": "nfnet-2021",
+      "title": "High-Performance Large-Scale Image Recognition Without Normalization",
+      "title_local": "无归一化的大规模高性能图像识别",
+      "short_title": "NFNet",
+      "year": 2021,
+      "venue": "ICML 2021",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Andrew Brock",
+        "Soham De",
+        "Samuel L. Smith",
+        "Karen Simonyan"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling"
+      ],
+      "level": 3,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P3",
+        "Q": "Q1"
+      },
+      "relevance_rank": 15,
+      "elevator": "继承 α/β 与 Scaled WS，再加入 AGC、新 block、SE 和系统级训练方案。",
+      "problem": "把无归一化信号传播扩展到大模型时仍有梯度异常与扩展效率问题。",
+      "mechanism": "继承 α/β 与 Scaled WS，再加入 AGC、新 block、SE 和系统级训练方案。",
+      "mechanism_steps": [
+        "继承残差尺度",
+        "AGC 控制梯度",
+        "联合架构与正则化扩展",
+        "大规模 ImageNet 验证"
+      ],
+      "evidence": [
+        "NFNet-F1 与 EfficientNet-B7 相近精度而训练快约 8.7 倍。",
+        "最大模型配合 SAM 达 86.5% top-1。"
+      ],
+      "limitations": [
+        "无连接单因素消融，性能高度依赖 AGC 和配方。",
+        "大模型与长训练成本高。"
+      ],
+      "implications": [
+        "证明整套 normalization-free 系统可扩展，因果证据应回溯 NF-ResNet。"
+      ],
+      "evidence_locations": [
+        "系统设计",
+        "主结果与效率表"
+      ],
+      "tags": [
+        "系统级",
+        "AGC"
+      ],
+      "paper_url": "https://proceedings.mlr.press/v139/brock21a.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "code_url": "https://github.com/deepmind/deepmind-research/tree/master/nfnets"
+    },
+    {
+      "id": "rescalenet-2020",
+      "title": "Is normalization indispensable for training deep neural network?",
+      "title_local": "归一化对深度网络训练是否不可或缺？",
+      "short_title": "RescaleNet",
+      "year": 2020,
+      "venue": "NeurIPS 2020",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Jie Shao",
+        "Kai Hu",
+        "Changhu Wang",
+        "Xiangyang Xue",
+        "Bhiksha Raj"
+      ],
+      "primary_route": "residual-scaling",
+      "routes": [
+        "residual-scaling"
+      ],
+      "level": 3,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P3",
+        "Q": "Q2"
+      },
+      "relevance_rank": 16,
+      "elevator": "使用 y_i=α_i x_i+β_iF_i(x_i) 配平两路方差，再加参数化、偏置与可学习倍率。",
+      "problem": "移除归一化后 y=x+F(x) 的方差逐层增长并伴随 dead ReLU。",
+      "mechanism": "使用 y_i=α_i x_i+β_iF_i(x_i) 配平两路方差，再加参数化、偏置与可学习倍率。",
+      "mechanism_steps": [
+        "估计方差增长",
+        "联合选择 α/β",
+        "重参数化并补偿 dead ReLU",
+        "多任务验证"
+      ],
+      "evidence": [
+        "RescaleNet-50 在 ImageNet 报告比对应 BN/GN 低约 0.3 error。",
+        "覆盖 COCO、Kinetics 与 WMT。"
+      ],
+      "limitations": [
+        "最终模型含多项配套，不能只归因 α/β。",
+        "跨任务主要是作者实现，缺独立统一复现。"
+      ],
+      "implications": [
+        "把缩放扩展到恒等与残差两路共同配平。"
+      ],
+      "evidence_locations": [
+        "RescaleNet 方程",
+        "ImageNet/COCO/Kinetics/WMT 表"
+      ],
+      "tags": [
+        "双路缩放",
+        "跨任务"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper_files/paper/2020/hash/9b8619251a19057cff70779273e95aa6-Abstract.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "shakedrop-2019",
+      "title": "ShakeDrop Regularization for Deep Residual Learning",
+      "title_local": "深度残差学习的 ShakeDrop 正则化",
+      "short_title": "ShakeDrop",
+      "year": 2019,
+      "venue": "IEEE Access 2019",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Yoshihiro Yamada",
+        "Masakazu Iwamura",
+        "Takuya Akiba",
+        "Koichi Kise"
+      ],
+      "primary_route": "stochastic-paths",
+      "routes": [
+        "stochastic-paths"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 22,
+      "elevator": "结合 Bernoulli 生存变量、前向 α 与反向 β；测试用系数期望。",
+      "problem": "Shake-Shake 依赖双分支，希望推广到普通单残差分支。",
+      "mechanism": "结合 Bernoulli 生存变量、前向 α 与反向 β；测试用系数期望。",
+      "mechanism_steps": [
+        "采样块生存",
+        "丢弃时随机 α",
+        "反向独立 β",
+        "测试取期望"
+      ],
+      "evidence": [
+        "正式版系统比较 α、β、生存率和多种 backbone。",
+        "论文给 stabilizer 条件并承认不合适参数会失稳。"
+      ],
+      "limitations": [
+        "参数随网络和 block 变化。",
+        "早期结果依赖延长训练。"
+      ],
+      "implications": [
+        "完成双分支 shake 到单分支扰动的谱系。"
+      ],
+      "evidence_locations": [
+        "IEEE Access §II–III",
+        "Tables 4–9"
+      ],
+      "tags": [
+        "单分支",
+        "稳定条件"
+      ],
+      "paper_url": "https://doi.org/10.1109/ACCESS.2019.2960566",
+      "source_note": "主实体采用 2019 正式期刊版；2018 workshop 是前身。",
+      "doi": "10.1109/ACCESS.2019.2960566"
+    },
+    {
+      "id": "shake-shake-2017",
+      "title": "Shake-Shake Regularization of 3-Branch Residual Networks",
+      "title_local": "三分支残差网络的 Shake-Shake 正则化",
+      "short_title": "Shake-Shake",
+      "year": 2017,
+      "venue": "ICLR 2017 Workshop",
+      "status": "preprint",
+      "source_type": "paper",
+      "authors": [
+        "Xavier Gastaldi"
+      ],
+      "primary_route": "stochastic-paths",
+      "routes": [
+        "stochastic-paths"
+      ],
+      "level": 1,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P1",
+        "Q": "Q1"
+      },
+      "relevance_rank": 21,
+      "elevator": "前向 x+αF1+(1-α)F2，反向可独立采样 β，测试时各取 0.5。",
+      "problem": "多分支残差模型可能共适应，需要在合并处引入梯度扰动。",
+      "mechanism": "前向 x+αF1+(1-α)F2，反向可独立采样 β，测试时各取 0.5。",
+      "mechanism_steps": [
+        "构造双残差分支",
+        "前向随机混合",
+        "反向独立混合",
+        "测试取均值"
+      ],
+      "evidence": [
+        "CIFAR 比较前后向相关性、采样粒度和批大小。",
+        "原始结果多依赖约 1800 epoch。"
+      ],
+      "limitations": [
+        "只适用于多分支。",
+        "工作坊/预印本状态且对训练长度敏感。"
+      ],
+      "implications": [
+        "把随机性推进到多增量合并方式。"
+      ],
+      "evidence_locations": [
+        "式(1)–(2)",
+        "CIFAR 消融"
+      ],
+      "tags": [
+        "随机混合",
+        "工作坊"
+      ],
+      "paper_url": "https://openreview.net/forum?id=HkO-PCmYl",
+      "source_note": "明确标为 ICLR Workshop/预印本，不冒充主会。"
+    },
+    {
+      "id": "swapout-2016",
+      "title": "Swapout: Learning an Ensemble of Deep Architectures",
+      "title_local": "Swapout：学习深层架构集合",
+      "short_title": "Swapout",
+      "year": 2016,
+      "venue": "NeurIPS 2016",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Saurabh Singh",
+        "Derek Hoiem",
+        "David Forsyth"
+      ],
+      "primary_route": "stochastic-paths",
+      "routes": [
+        "stochastic-paths"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 20,
+      "elevator": "两个 Bernoulli 张量独立门控 X 和 F(X)，形成丢弃、仅捷径、仅变换或完整相加四种状态。",
+      "problem": "希望比 dropout 或块级随机深度更一般地采样局部架构。",
+      "mechanism": "两个 Bernoulli 张量独立门控 X 和 F(X)，形成丢弃、仅捷径、仅变换或完整相加四种状态。",
+      "mechanism_steps": [
+        "采样 shortcut 门",
+        "采样 residual 门",
+        "形成四种状态",
+        "缩放或 Monte Carlo 推理"
+      ],
+      "evidence": [
+        "CIFAR 比较概率调度和推理方式。",
+        "最佳 Monte Carlo 约需 30 次采样，正式评审质疑成本。"
+      ],
+      "limitations": [
+        "无 ImageNet，BN 与确定性推理有交互。",
+        "逐单元随机难获得结构化硬件加速。"
+      ],
+      "implications": [
+        "说明随机性可直接作用于两路合并节点。"
+      ],
+      "evidence_locations": [
+        "§2",
+        "§3.1",
+        "CIFAR 结果与评审"
+      ],
+      "tags": [
+        "双门控",
+        "Monte Carlo"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper_files/paper/2016/hash/c51ce410c124a10e0db5e4b97fc2af39-Abstract.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "stochastic-depth-2016",
+      "title": "Deep Networks with Stochastic Depth",
+      "title_local": "随机深度网络",
+      "short_title": "Stochastic Depth",
+      "year": 2016,
+      "venue": "ECCV 2016",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Gao Huang",
+        "Yu Sun",
+        "Zhuang Liu",
+        "Daniel Sedra",
+        "Kilian Q. Weinberger"
+      ],
+      "primary_route": "stochastic-paths",
+      "routes": [
+        "stochastic-paths"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 19,
+      "elevator": "训练为每块采样 Bernoulli b_l，关闭时只走捷径；测试用生存率缩放。",
+      "problem": "极深 ResNet 训练成本高且易过拟合，希望利用块的可跳过性。",
+      "mechanism": "训练为每块采样 Bernoulli b_l，关闭时只走捷径；测试用生存率缩放。",
+      "mechanism_steps": [
+        "设置生存率",
+        "训练采样是否执行",
+        "关闭时走 identity",
+        "测试用期望缩放"
+      ],
+      "evidence": [
+        "CIFAR-1202 报告 4.91% error 和约 25% 训练提速。",
+        "ImageNet 同 90 epoch 为 23.38，略差 baseline 23.06；延长后才改善。"
+      ],
+      "limitations": [
+        "训练/推理图不同且路径按批次随机。",
+        "不是无额外预算的普遍提升，浅网未必受益。"
+      ],
+      "implications": [
+        "成为 drop-path 与动态块路由的共同参照。"
+      ],
+      "evidence_locations": [
+        "§3，式(2)–(4)",
+        "Figure 2",
+        "CIFAR/ImageNet 表"
+      ],
+      "tags": [
+        "块丢弃",
+        "预算反例"
+      ],
+      "paper_url": "https://arxiv.org/abs/1603.09382",
+      "source_note": "书目采用 ECCV 2016；arXiv 为同一全文版本族。",
+      "doi": "10.1007/978-3-319-46493-0_39"
+    },
+    {
+      "id": "highway-networks-2015",
+      "title": "Training Very Deep Networks",
+      "title_local": "训练超深网络",
+      "short_title": "Highway Networks",
+      "year": 2015,
+      "venue": "NeurIPS 2015",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Rupesh Kumar Srivastava",
+        "Klaus Greff",
+        "Jürgen Schmidhuber"
+      ],
+      "primary_route": "adaptive-routing",
+      "routes": [
+        "adaptive-routing"
+      ],
+      "level": 1,
+      "tier": "background",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 23,
+      "elevator": "y=H(x)T(x)+xC(x)，常用 C=1-T，并用负门偏置让初始状态偏向 carry。",
+      "problem": "普通深网难训练，希望让每层按输入选择变换或直通。",
+      "mechanism": "y=H(x)T(x)+xC(x)，常用 C=1-T，并用负门偏置让初始状态偏向 carry。",
+      "mechanism_steps": [
+        "计算 H(x)",
+        "预测 transform gate",
+        "carry gate 保留输入",
+        "负偏置初始化"
+      ],
+      "evidence": [
+        "正文给出门方程、活动可视化和 lesion。",
+        "MNIST/CIFAR 显示可训练很深网络。"
+      ],
+      "limitations": [
+        "每层增加 sigmoid 门开销；carry 只有饱和时近似恒等。",
+        "它是 ResNet 前驱而非后续。"
+      ],
+      "implications": [
+        "凸显 ResNet 去门并固定 identity 的关键简化。"
+      ],
+      "evidence_locations": [
+        "§2 方程",
+        "gate bias 与 lesion"
+      ],
+      "tags": [
+        "前驱",
+        "carry gate"
+      ],
+      "paper_url": "https://papers.nips.cc/paper_files/paper/2015/hash/215a71a12769b056c3c32e7299f1c5ed-Abstract.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "adaptive-depth-2024",
+      "title": "Adaptive Depth Networks with Skippable Sub-Paths",
+      "title_local": "具有可跳过子路径的自适应深度网络",
+      "short_title": "Adaptive Depth",
+      "year": 2024,
+      "venue": "NeurIPS 2024",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Woochul Kang",
+        "Hyungseop Lee"
+      ],
+      "primary_route": "adaptive-routing",
+      "routes": [
+        "adaptive-routing"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 29,
+      "elevator": "每个 residual stage 分成 essential 和 refining sub-path，自蒸馏让后半段可省略，测试组合多深度子网。",
+      "problem": "早期自适应深度训练复杂，缺少哪些层可跳的原则。",
+      "mechanism": "每个 residual stage 分成 essential 和 refining sub-path，自蒸馏让后半段可省略，测试组合多深度子网。",
+      "mechanism_steps": [
+        "拆阶段为必选/可跳",
+        "自蒸馏区分角色",
+        "共享一次训练",
+        "组合部署深度"
+      ],
+      "evidence": [
+        "给出跳过子路径误差的形式化理由。",
+        "CNN 与 Transformer 均验证单模型多档位。"
+      ],
+      "limitations": [
+        "是预算可选静态子网，不是逐样本门控。",
+        "跨架构结论需分别核对。"
+      ],
+      "implications": [
+        "把路由目标转向可预测的部署档位。"
+      ],
+      "evidence_locations": [
+        "方法定义",
+        "自蒸馏章节",
+        "CNN/Transformer 结果"
+      ],
+      "tags": [
+        "可跳子路径",
+        "自蒸馏"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/3a2d96d2eb2902043c2db705ca03e9a2-Abstract-Conference.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.52202/079017-1046"
+    },
+    {
+      "id": "blockdrop-2018",
+      "title": "BlockDrop: Dynamic Inference Paths in Residual Networks",
+      "title_local": "BlockDrop：残差网络的动态推理路径",
+      "short_title": "BlockDrop",
+      "year": 2018,
+      "venue": "CVPR 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Zuxuan Wu",
+        "Tushar Nagarajan",
+        "Abhishek Kumar",
+        "Steven Rennie",
+        "Larry S. Davis",
+        "Kristen Grauman",
+        "Rogerio Feris"
+      ],
+      "primary_route": "adaptive-routing",
+      "routes": [
+        "adaptive-routing"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 25,
+      "elevator": "策略网络一次预测全部 blocks 的二值向量，用强化学习奖励、课程学习和联合微调。",
+      "problem": "固定深度对简单样本浪费计算。",
+      "mechanism": "策略网络一次预测全部 blocks 的二值向量，用强化学习奖励、课程学习和联合微调。",
+      "mechanism_steps": [
+        "预测整条路径",
+        "执行或跳过块",
+        "优化准确率与块数",
+        "课程学习后微调"
+      ],
+      "evidence": [
+        "ResNet-101 ImageNet 保持 76.4% top-1 时平均约 20% 加速。",
+        "Table 2 计入策略开销与实际速度。"
+      ],
+      "limitations": [
+        "依赖预训练、强化学习和课程学习。",
+        "块数/FLOPs 不等于墙钟延迟。"
+      ],
+      "implications": [
+        "代表推理期全局输入相关路由。"
+      ],
+      "evidence_locations": [
+        "§3",
+        "Figure 3",
+        "Table 2"
+      ],
+      "tags": [
+        "动态推理",
+        "实际延迟"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content_cvpr_2018/html/Wu_BlockDrop_Dynamic_Inference_CVPR_2018_paper.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1109/CVPR.2018.00919"
+    },
+    {
+      "id": "convnet-aig-2018",
+      "title": "Convolutional Networks with Adaptive Inference Graphs",
+      "title_local": "具有自适应推理图的卷积网络",
+      "short_title": "ConvNet-AIG",
+      "year": 2018,
+      "venue": "ECCV 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Andreas Veit",
+        "Serge Belongie"
+      ],
+      "primary_route": "adaptive-routing",
+      "routes": [
+        "adaptive-routing"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 27,
+      "elevator": "每层 gate 预测概率，用 Gumbel sampling 与 straight-through 联合训练，推理形成离散图。",
+      "problem": "argmax 硬门不可微且易模式坍塌。",
+      "mechanism": "每层 gate 预测概率，用 Gumbel sampling 与 straight-through 联合训练，推理形成离散图。",
+      "mechanism_steps": [
+        "预测执行概率",
+        "Gumbel 采样二值门",
+        "直通估计梯度",
+        "离散推理"
+      ],
+      "evidence": [
+        "ImageNet ResNet-50/101 报告 gate overhead 和跳层统计。",
+        "朴素 argmax 会快速 mode collapse。"
+      ],
+      "limitations": [
+        "依赖温度与随机代理，仍有训练部署失配。",
+        "路径可能学到数据集特定捷径。"
+      ],
+      "implications": [
+        "与 BlockDrop/SkipNet 构成同期平行路由分叉。"
+      ],
+      "evidence_locations": [
+        "Figure 1",
+        "§3.2–3.3",
+        "ImageNet 结果"
+      ],
+      "tags": [
+        "Gumbel",
+        "模式坍塌"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content_ECCV_2018/papers/Andreas_Veit_Convolutional_Networks_with_ECCV_2018_paper.pdf",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1007/978-3-030-01246-5_1"
+    },
+    {
+      "id": "epsilon-resnet-2018",
+      "title": "Learning Strict Identity Mappings in Deep Residual Networks",
+      "title_local": "在深度残差网络中学习严格恒等映射",
+      "short_title": "ε-ResNet",
+      "year": 2018,
+      "venue": "CVPR 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Xin Yu",
+        "Zhiding Yu",
+        "Srikumar Ramalingam"
+      ],
+      "primary_route": "adaptive-routing",
+      "routes": [
+        "adaptive-routing",
+        "identity-projection"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 28,
+      "elevator": "用 ε 阈值让小残差响应精确为零，块严格退化为 identity，训练后删除。",
+      "problem": "一般稀疏门只近似为零，难以安全删除冗余残差块。",
+      "mechanism": "用 ε 阈值让小残差响应精确为零，块严格退化为 identity，训练后删除。",
+      "mechanism_steps": [
+        "计算残差响应",
+        "ε 阈值压零",
+        "块变严格恒等",
+        "训练后删除"
+      ],
+      "evidence": [
+        "CIFAR、SVHN 和 ImageNet 均评估层选择。",
+        "752 层 CIFAR-100 示例压缩约 3.2 倍且精度不降。",
+        "部分设置参数量最多减少约 80%。"
+      ],
+      "limitations": [
+        "阈值依赖数据和配方。",
+        "属于训练后静态剪枝，不是逐输入路由。"
+      ],
+      "implications": [
+        "连接可学习门与可证明可删除块。"
+      ],
+      "evidence_locations": [
+        "模型定义",
+        "Figure 1",
+        "多数据集结果"
+      ],
+      "tags": [
+        "严格恒等",
+        "剪枝"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content_cvpr_2018/html/Yu_Learning_Strict_Identity_CVPR_2018_paper.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1109/CVPR.2018.00466"
+    },
+    {
+      "id": "skipnet-2018",
+      "title": "SkipNet: Learning Dynamic Routing in Convolutional Networks",
+      "title_local": "SkipNet：卷积网络的动态路由学习",
+      "short_title": "SkipNet",
+      "year": 2018,
+      "venue": "ECCV 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Xin Wang",
+        "Fisher Yu",
+        "Zi-Yi Dou",
+        "Trevor Darrell",
+        "Joseph E. Gonzalez"
+      ],
+      "primary_route": "adaptive-routing",
+      "routes": [
+        "adaptive-routing"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 26,
+      "elevator": "G_i(x_i) 在 residual 与 identity 间选择；先监督预训练，再强化学习硬门。",
+      "problem": "希望按当前激活逐层调整深度并优化准确率—计算权衡。",
+      "mechanism": "G_i(x_i) 在 residual 与 identity 间选择；先监督预训练，再强化学习硬门。",
+      "mechanism_steps": [
+        "当前激活预测门",
+        "执行或跳过块",
+        "软门预训练",
+        "强化硬路由"
+      ],
+      "evidence": [
+        "ImageNet 报告约减少 30% 计算。",
+        "soft 训练后直接 hard 推理可从约 90.83 跌到 66.67。",
+        "训练通常多约 30%–40% 时间。"
+      ],
+      "limitations": [
+        "顺序门有运行开销。",
+        "软硬失配是核心风险。"
+      ],
+      "implications": [
+        "给出动态路由的关键部署反例。"
+      ],
+      "evidence_locations": [
+        "§3，式(1)",
+        "Table 3",
+        "训练/计算分析"
+      ],
+      "tags": [
+        "软硬失配",
+        "强化学习"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content_ECCV_2018/html/Xin_Wang_SkipNet_Learning_Dynamic_ECCV_2018_paper.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1007/978-3-030-01261-8_25"
+    },
+    {
+      "id": "sact-2017",
+      "title": "Spatially Adaptive Computation Time for Residual Networks",
+      "title_local": "残差网络的空间自适应计算时间",
+      "short_title": "SACT",
+      "year": 2017,
+      "venue": "CVPR 2017",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Michael Figurnov",
+        "Maxwell D. Collins",
+        "Yukun Zhu",
+        "Li Zhang",
+        "Jonathan Huang",
+        "Dmitry Vetrov",
+        "Ruslan Salakhutdinov"
+      ],
+      "primary_route": "adaptive-routing",
+      "routes": [
+        "adaptive-routing"
+      ],
+      "level": 3,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P3",
+        "Q": "Q2"
+      },
+      "relevance_rank": 24,
+      "elevator": "每个位置累积 halting probability，达到阈值后停止残差更新，并用 ponder cost 约束计算。",
+      "problem": "逐图动态深度太粗，密集预测需要按空间位置分配层数。",
+      "mechanism": "每个位置累积 halting probability，达到阈值后停止残差更新，并用 ponder cost 约束计算。",
+      "mechanism_steps": [
+        "预测位置停止概率",
+        "累积到阈值",
+        "停止位置保留状态",
+        "ponder cost 约束"
+      ],
+      "evidence": [
+        "ImageNet 分类与 COCO 检测都报告效率改善。",
+        "计算图与 CAT2000 注视位置相关。"
+      ],
+      "limitations": [
+        "真实硬件收益依赖稀疏执行实现。",
+        "区域级控制增加复杂度。"
+      ],
+      "implications": [
+        "把可跳过性推进到空间粒度和跨任务。"
+      ],
+      "evidence_locations": [
+        "SACT 定义与算法",
+        "ImageNet/COCO",
+        "CAT2000"
+      ],
+      "tags": [
+        "空间路由",
+        "COCO"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content_cvpr_2017/html/Figurnov_Spatially_Adaptive_Computation_CVPR_2017_paper.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1109/CVPR.2017.194"
+    },
+    {
+      "id": "dense-shortcuts-2021",
+      "title": "ResNet or DenseNet? Introducing Dense Shortcuts to ResNet",
+      "title_local": "ResNet 还是 DenseNet？向 ResNet 引入稠密捷径",
+      "short_title": "Dense Shortcuts",
+      "year": 2021,
+      "venue": "WACV 2021",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Chaoning Zhang",
+        "Philipp Benz",
+        "Dawit Mureja Argaw",
+        "Seokju Lee",
+        "Junsik Kim",
+        "Francois Rameau",
+        "Jean-Charles Bazin",
+        "In So Kweon"
+      ],
+      "primary_route": "aggregation-topology",
+      "routes": [
+        "aggregation-topology"
+      ],
+      "level": 2,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 38,
+      "elevator": "多个早期特征经归一化加权后求和，介于单一 shortcut 与全拼接之间。",
+      "problem": "单一 identity 可能限制复用，dense concatenation 又耗显存。",
+      "mechanism": "多个早期特征经归一化加权后求和，介于单一 shortcut 与全拼接之间。",
+      "mechanism_steps": [
+        "选择多前驱",
+        "归一化贡献",
+        "加权稠密捷径",
+        "求和保持紧凑"
+      ],
+      "evidence": [
+        "多基准比较 DSNet、ResNet 与 DenseNet。",
+        "作者报告性能接近 DenseNet 而资源更低。"
+      ],
+      "limitations": [
+        "权重、归一化、连接数和宽度共同变。",
+        "缺现代配方独立复现。"
+      ],
+      "implications": [
+        "提供 2021 年直接 dense shortcut 融合。"
+      ],
+      "evidence_locations": [
+        "方法定义",
+        "多基准与资源表"
+      ],
+      "tags": [
+        "稠密捷径"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content/WACV2021/html/Zhang_ResNet_or_DenseNet_Introducing_Dense_Shortcuts_to_ResNet_WACV_2021_paper.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1109/WACV48630.2021.00359"
+    },
+    {
+      "id": "lm-resnet-2018",
+      "title": "Beyond Finite Layer Neural Networks: Bridging Deep Architectures and Numerical Differential Equations",
+      "title_local": "超越有限层网络：连接深层架构与数值微分方程",
+      "short_title": "LM-ResNet",
+      "year": 2018,
+      "venue": "ICML 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Yiping Lu",
+        "Aoxiao Zhong",
+        "Quanzheng Li",
+        "Bin Dong"
+      ],
+      "primary_route": "aggregation-topology",
+      "routes": [
+        "aggregation-topology",
+        "reversible-connections",
+        "mechanism-limits"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 36,
+      "elevator": "LM-architecture 让新状态依赖当前和历史状态与残差，可插入 ResNet/ResNeXt。",
+      "problem": "一阶 Euler 式 ResNet 只用当前状态，多步法提示更高阶更新。",
+      "mechanism": "LM-architecture 让新状态依赖当前和历史状态与残差，可插入 ResNet/ResNeXt。",
+      "mechanism_steps": [
+        "解释为一阶离散",
+        "保留历史状态",
+        "线性多步组合",
+        "加入残差变换"
+      ],
+      "evidence": [
+        "CIFAR 与 ImageNet 上 LM-ResNet/ResNeXt 报告改善。",
+        "相近性能时可压缩超过 50% 层数。"
+      ],
+      "limitations": [
+        "无权重平滑性时 ResNet 不保证收敛到 ODE。",
+        "历史状态和系数改变整个块。"
+      ],
+      "implications": [
+        "建立多步状态连接支线。"
+      ],
+      "evidence_locations": [
+        "LM 定义",
+        "CIFAR/ImageNet 表",
+        "压缩实验"
+      ],
+      "tags": [
+        "多步方法",
+        "动力系统"
+      ],
+      "paper_url": "https://proceedings.mlr.press/v80/lu18d.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "merge-and-run-2018",
+      "title": "Deep Convolutional Neural Networks with Merge-and-Run Mappings",
+      "title_local": "采用 Merge-and-Run 映射的深度卷积网络",
+      "short_title": "Merge-and-Run",
+      "year": 2018,
+      "venue": "IJCAI 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Liming Zhao",
+        "Mingjie Li",
+        "Depu Meng",
+        "Xi Li",
+        "Zhaoxiang Zhang",
+        "Yueting Zhuang",
+        "Zhuowen Tu",
+        "Jingdong Wang"
+      ],
+      "primary_route": "aggregation-topology",
+      "routes": [
+        "aggregation-topology"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 37,
+      "elevator": "对平行分支输入求平均，再把均值加到各分支输出；映射矩阵线性且幂等。",
+      "problem": "串行 residual paths 仍长，希望并行并交换状态。",
+      "mechanism": "对平行分支输入求平均，再把均值加到各分支输出；映射矩阵线性且幂等。",
+      "mechanism_steps": [
+        "并行残差分支",
+        "平均分支输入",
+        "均值加回各支",
+        "重复幂等映射"
+      ],
+      "evidence": [
+        "Table 7 直接比较 identity 与 merge-and-run。",
+        "ImageNet DMRNet-50 error 23.16，对 ResNet-98 23.38，参数近似。",
+        "K=2 整体最好，更多分支不更优。"
+      ],
+      "limitations": [
+        "并行化同时缩短路径和增加宽度。",
+        "正式八作者版与早期五作者版不同。"
+      ],
+      "implications": [
+        "代表非恒等但幂等的分支聚合算子。"
+      ],
+      "evidence_locations": [
+        "Figure 1",
+        "Tables 6–7",
+        "§5"
+      ],
+      "tags": [
+        "幂等映射",
+        "版本冲突"
+      ],
+      "paper_url": "https://www.ijcai.org/proceedings/2018/0440.pdf",
+      "source_note": "采用 IJCAI 2018 八作者正式版；早期 arXiv 不重复。",
+      "doi": "10.24963/ijcai.2018/440"
+    },
+    {
+      "id": "mixnet-2018",
+      "title": "Mixed Link Networks",
+      "title_local": "混合链接网络",
+      "short_title": "MixNet",
+      "year": 2018,
+      "venue": "IJCAI 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Wenhai Wang",
+        "Xiang Li",
+        "Tong Lu",
+        "Jian Yang"
+      ],
+      "primary_route": "aggregation-topology",
+      "routes": [
+        "aggregation-topology"
+      ],
+      "level": 2,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 35,
+      "elevator": "inner addition 更新固定宽度复用状态，outer concatenation 累积新特征。",
+      "problem": "ResNet 加法与 DenseNet 拼接有不同复用偏好，需要混合连接代数。",
+      "mechanism": "inner addition 更新固定宽度复用状态，outer concatenation 累积新特征。",
+      "mechanism_steps": [
+        "维护加法状态",
+        "维护拼接状态",
+        "block 同时更新",
+        "传递混合状态"
+      ],
+      "evidence": [
+        "§3 给公式与图。",
+        "CIFAR、SVHN、ImageNet 报告参数效率。"
+      ],
+      "limitations": [
+        "统一性依赖作者状态分解。",
+        "连接数、增长率与宏结构共同变。"
+      ],
+      "implications": [
+        "在 DPN 后整理混合连接代数。"
+      ],
+      "evidence_locations": [
+        "§3",
+        "多数据集表"
+      ],
+      "tags": [
+        "混合链接"
+      ],
+      "paper_url": "https://www.ijcai.org/Proceedings/2018/391",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.24963/ijcai.2018/391"
+    },
+    {
+      "id": "ror-2018",
+      "title": "Residual Networks of Residual Networks: Multilevel Residual Networks",
+      "title_local": "残差网络之残差网络：多层级残差网络",
+      "short_title": "RoR",
+      "year": 2018,
+      "venue": "IEEE TCSVT 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Ke Zhang",
+        "Miao Sun",
+        "Tony X. Han",
+        "Xingfang Yuan",
+        "Liru Guo",
+        "Tao Liu"
+      ],
+      "primary_route": "aggregation-topology",
+      "routes": [
+        "aggregation-topology"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 30,
+      "elevator": "在 block shortcut 上叠加 stage 和 root shortcut，转换处用投影。",
+      "problem": "单块捷径之外，跨阶段和整网最短路径仍较长。",
+      "mechanism": "在 block shortcut 上叠加 stage 和 root shortcut，转换处用投影。",
+      "mechanism_steps": [
+        "保留块级残差",
+        "增加阶段捷径",
+        "增加 root 捷径",
+        "转换处投影"
+      ],
+      "evidence": [
+        "层级数与 shortcut 类型有消融。",
+        "3 levels 通常最好，4/5 levels 可低于基线。"
+      ],
+      "limitations": [
+        "联合 stochastic depth 的结果不能全归因 RoR。",
+        "最佳层级和投影依数据。"
+      ],
+      "implications": [
+        "最直接的 shortcut-of-shortcut 与非单调反例。"
+      ],
+      "evidence_locations": [
+        "§3",
+        "层级/shortcut 消融"
+      ],
+      "tags": [
+        "多层级",
+        "非单调"
+      ],
+      "paper_url": "https://arxiv.org/abs/1608.02908",
+      "source_note": "书目用 2018 正式卷期；2016 arXiv 与 2017 early access 同族。",
+      "doi": "10.1109/TCSVT.2017.2654543"
+    },
+    {
+      "id": "sparsenet-2018",
+      "title": "Sparsely Aggregated Convolutional Networks",
+      "title_local": "稀疏聚合卷积网络",
+      "short_title": "SparseNet",
+      "year": 2018,
+      "venue": "ECCV 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Ligeng Zhu",
+        "Ruizhi Deng",
+        "Michael Maire",
+        "Zhiwei Deng",
+        "Greg Mori",
+        "Ping Tan"
+      ],
+      "primary_route": "aggregation-topology",
+      "routes": [
+        "aggregation-topology"
+      ],
+      "level": 2,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 34,
+      "elevator": "每层只连指数间隔的一组前层，入边从线性降为对数，可用加法或拼接。",
+      "problem": "DenseNet 全连接图的边、激活和内存成本随深度增长。",
+      "mechanism": "每层只连指数间隔的一组前层，入边从线性降为对数，可用加法或拼接。",
+      "mechanism_steps": [
+        "指数间隔选前驱",
+        "加法或拼接聚合",
+        "减少入边",
+        "扩展超深网络"
+      ],
+      "evidence": [
+        "正文给出连接集合与复杂度。",
+        "CIFAR/ImageNet 比较参数效率并含 1000+ 层。"
+      ],
+      "limitations": [
+        "日程手工固定，不自适应输入。",
+        "删除直连会增加部分最短路径。"
+      ],
+      "implications": [
+        "区分固定稀疏拓扑与随机丢边。"
+      ],
+      "evidence_locations": [
+        "§3",
+        "复杂度",
+        "CIFAR/ImageNet 表"
+      ],
+      "tags": [
+        "稀疏图"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content_ECCV_2018/html/Ligeng_Zhu_Sparsely_Aggregated_Convolutional_ECCV_2018_paper.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1007/978-3-030-01258-8_12"
+    },
+    {
+      "id": "polynet-2017",
+      "title": "PolyNet: A Pursuit of Structural Diversity in Very Deep Networks",
+      "title_local": "PolyNet：追求超深网络的结构多样性",
+      "short_title": "PolyNet",
+      "year": 2017,
+      "venue": "CVPR 2017",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Xingcheng Zhang",
+        "Zhizhong Li",
+        "Chen Change Loy",
+        "Dahua Lin"
+      ],
+      "primary_route": "aggregation-topology",
+      "routes": [
+        "aggregation-topology",
+        "stochastic-paths",
+        "residual-scaling"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 31,
+      "elevator": "将 I+F 扩成 I+F+F²、I+F+GF 或 I+F+G，并用 insertion init、缩放稳定极深模型。",
+      "problem": "重复 I+F 路径结构单调，希望增加高阶和并行组合。",
+      "mechanism": "将 I+F 扩成 I+F+F²、I+F+GF 或 I+F+G，并用 insertion init、缩放稳定极深模型。",
+      "mechanism_steps": [
+        "把块视为 I+F",
+        "加入二阶/并行项",
+        "级联实现路径",
+        "插入初始化与缩放"
+      ],
+      "evidence": [
+        "Figure 4 给出算子展开，逐项替换通常改善。",
+        "随机初始化不稳，过早随机路径会妨碍收敛。"
+      ],
+      "limitations": [
+        "替换也增加计算，最终结果含多尺度多裁剪。",
+        "Inception 宏结构与稳定配套混杂。"
+      ],
+      "implications": [
+        "把连接从二路相加改成路径代数。"
+      ],
+      "evidence_locations": [
+        "Figure 4",
+        "§3.2",
+        "Figures 9–10"
+      ],
+      "tags": [
+        "多项式路径"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content_cvpr_2017/html/Zhang_PolyNet_A_Pursuit_CVPR_2017_paper.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1109/CVPR.2017.415"
+    },
+    {
+      "id": "dla-2018",
+      "title": "Deep Layer Aggregation",
+      "title_local": "深层聚合",
+      "short_title": "DLA",
+      "year": 2018,
+      "venue": "CVPR 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Fisher Yu",
+        "Dequan Wang",
+        "Evan Shelhamer",
+        "Trevor Darrell"
+      ],
+      "primary_route": "aggregation-topology",
+      "routes": [
+        "aggregation-topology"
+      ],
+      "level": 3,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P3",
+        "Q": "Q1"
+      },
+      "relevance_rank": 33,
+      "elevator": "Iterative DLA 逐步融合阶段，Hierarchical DLA 用树形节点聚合多深度与多尺度。",
+      "problem": "相邻 block skip 不足以系统融合浅层定位与深层语义。",
+      "mechanism": "Iterative DLA 逐步融合阶段，Hierarchical DLA 用树形节点聚合多深度与多尺度。",
+      "mechanism_steps": [
+        "迭代跨阶段聚合",
+        "树形层次聚合",
+        "融合多深度状态",
+        "迁移到密集任务"
+      ],
+      "evidence": [
+        "Figure 1 和 §3 定义 IDA/HDA。",
+        "分类、分割等多任务验证。"
+      ],
+      "limitations": [
+        "连接树、节点、宽深和任务头共同变。",
+        "属网络级拓扑而非局部 shortcut 小改。"
+      ],
+      "implications": [
+        "将跨层连接提升为层次网络图设计。"
+      ],
+      "evidence_locations": [
+        "Figure 1",
+        "§3.1–3.2",
+        "多任务表"
+      ],
+      "tags": [
+        "树形聚合",
+        "跨尺度"
+      ],
+      "paper_url": "https://openaccess.thecvf.com/content_cvpr_2018/html/Yu_Deep_Layer_Aggregation_CVPR_2018_paper.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1109/CVPR.2018.00255"
+    },
+    {
+      "id": "dpn-2017",
+      "title": "Dual Path Networks",
+      "title_local": "双路径网络",
+      "short_title": "DPN",
+      "year": 2017,
+      "venue": "NeurIPS 2017",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Yunpeng Chen",
+        "Jianan Li",
+        "Huaxin Xiao",
+        "Xiaojie Jin",
+        "Shuicheng Yan",
+        "Jiashi Feng"
+      ],
+      "primary_route": "aggregation-topology",
+      "routes": [
+        "aggregation-topology"
+      ],
+      "level": 3,
+      "tier": "core",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P3",
+        "Q": "Q1"
+      },
+      "relevance_rank": 32,
+      "elevator": "block 输出分成 residual 与 dense 部分；前者加到共享状态，后者拼接到探索状态。",
+      "problem": "纯加法偏重复用，纯拼接持续增长状态，希望兼顾复用与探索。",
+      "mechanism": "block 输出分成 residual 与 dense 部分；前者加到共享状态，后者拼接到探索状态。",
+      "mechanism_steps": [
+        "拆共享/探索状态",
+        "block 生成两类输出",
+        "残差部分相加",
+        "新特征部分拼接"
+      ],
+      "evidence": [
+        "正文给出 dual-path 公式与图。",
+        "ImageNet 外还验证检测与分割。"
+      ],
+      "limitations": [
+        "宽度、增长率、分组卷积和连接同时变。",
+        "dense 状态仍带来显存压力。"
+      ],
+      "implications": [
+        "代表加法与拼接混合聚合。"
+      ],
+      "evidence_locations": [
+        "§3–4，Figure 2",
+        "ImageNet/检测/分割表"
+      ],
+      "tags": [
+        "加法",
+        "拼接",
+        "双状态"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper/2017/hash/f7e0b956540676a129760a3eae309294-Abstract.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "hamiltonian-reversible-2018",
+      "title": "Reversible Architectures for Arbitrarily Deep Residual Neural Networks",
+      "title_local": "任意深残差网络的可逆架构",
+      "short_title": "Hamiltonian reversible nets",
+      "year": 2018,
+      "venue": "AAAI 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Bo Chang",
+        "Lili Meng",
+        "Eldad Haber",
+        "Lars Ruthotto",
+        "David Begert",
+        "Elliot Holtham"
+      ],
+      "primary_route": "reversible-connections",
+      "routes": [
+        "reversible-connections"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 41,
+      "elevator": "从 Hamiltonian/二阶系统设计 Verlet、midpoint、leapfrog 等可逆层，并约束算子结构。",
+      "problem": "显式 Euler 不可逆也未必稳定，代数逆不是良好动力学的充分条件。",
+      "mechanism": "从 Hamiltonian/二阶系统设计 Verlet、midpoint、leapfrog 等可逆层，并约束算子结构。",
+      "mechanism_steps": [
+        "选择可逆动力系统",
+        "可逆数值离散",
+        "约束谱/步长",
+        "末态重建"
+      ],
+      "evidence": [
+        "CIFAR 比较多种格式，若干 midpoint/leapfrog 明显较差。",
+        "1202 层比较使用不同 batch size。"
+      ],
+      "limitations": [
+        "无 ImageNet，设置不完全公平。",
+        "可逆格式表现差异大。"
+      ],
+      "implications": [
+        "把可逆性与数值稳定分开。"
+      ],
+      "evidence_locations": [
+        "动力系统章节",
+        "Table 1"
+      ],
+      "tags": [
+        "Hamiltonian",
+        "数值稳定"
+      ],
+      "paper_url": "https://ojs.aaai.org/index.php/AAAI/article/view/11668",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "doi": "10.1609/aaai.v32i1.11668"
+    },
+    {
+      "id": "momentum-resnet-2021",
+      "title": "Momentum Residual Neural Networks",
+      "title_local": "动量残差神经网络",
+      "short_title": "Momentum ResNet",
+      "year": 2021,
+      "venue": "ICML 2021",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Michael E. Sander",
+        "Pierre Ablin",
+        "Mathieu Blondel",
+        "Gabriel Peyré"
+      ],
+      "primary_route": "reversible-connections",
+      "routes": [
+        "reversible-connections",
+        "aggregation-topology"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q3"
+      },
+      "relevance_rank": 44,
+      "elevator": "引入 v：v'=γv+(1-γ)f(x)，x'=x+v'；新状态可闭式恢复，bit buffer 保存有限精度位。",
+      "problem": "coupling 改结构，i-ResNet 需收缩约束，希望对任意 block 做 drop-in 可逆化。",
+      "mechanism": "引入 v：v'=γv+(1-γ)f(x)，x'=x+v'；新状态可闭式恢复，bit buffer 保存有限精度位。",
+      "mechanism_steps": [
+        "引入动量 v",
+        "残差更新 v",
+        "v 更新 x",
+        "闭式反演",
+        "bit buffer"
+      ],
+      "evidence": [
+        "Table 1 比较闭式逆与约束。",
+        "CIFAR 每模型 10 次，CIFAR-10 等效，CIFAR-100 低约 0.5 点。",
+        "ImageNet 接近但仍有约 1 点内差距。"
+      ],
+      "limitations": [
+        "bit buffer 不是零存储。",
+        "固定 γ、额外状态使同参数不等于同延迟。"
+      ],
+      "implications": [
+        "融合二阶动力学与激活重构。"
+      ],
+      "evidence_locations": [
+        "更新/逆方程",
+        "Tables 1–2",
+        "ImageNet Figure 6"
+      ],
+      "tags": [
+        "动量",
+        "bit buffer"
+      ],
+      "paper_url": "https://proceedings.mlr.press/v139/sander21a.html",
+      "source_note": "ICML 正式版；相近 m-RevNet 只能核得预印本，未冒充 ICCV。"
+    },
+    {
+      "id": "i-revnet-2018",
+      "title": "i-RevNet: Deep Invertible Networks",
+      "title_local": "i-RevNet：深度可逆网络",
+      "short_title": "i-RevNet",
+      "year": 2018,
+      "venue": "ICLR 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Jörn-Henrik Jacobsen",
+        "Arnold W. M. Smeulders",
+        "Edouard Oyallon"
+      ],
+      "primary_route": "reversible-connections",
+      "routes": [
+        "reversible-connections",
+        "identity-projection"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 40,
+      "elevator": "保留 coupling，并用 space-to-depth 重排降低 H/W、增加通道，保持自由度。",
+      "problem": "RevNet 的阶段下采样仍不可逆。",
+      "mechanism": "保留 coupling，并用 space-to-depth 重排降低 H/W、增加通道，保持自由度。",
+      "mechanism_steps": [
+        "耦合块",
+        "空间重排到通道",
+        "降分辨率保维数",
+        "分类头前反演"
+      ],
+      "evidence": [
+        "匹配 ResNet 精度的版本需约 181M 参数，对比 26M；匹配参数版差约 1.5–2 点。",
+        "反演误差约 10^-6，但奇异谱显示方向压缩。"
+      ],
+      "limitations": [
+        "维数保持不等于良好条件数。",
+        "分类头仍不可逆，墙钟增加约三分之一。"
+      ],
+      "implications": [
+        "展示可逆下采样的精度—参数折中。"
+      ],
+      "evidence_locations": [
+        "下采样定义",
+        "Table 1",
+        "反演/奇异谱"
+      ],
+      "tags": [
+        "可逆下采样"
+      ],
+      "paper_url": "https://openreview.net/forum?id=HJsjkMb0Z",
+      "source_note": "与 Behrmann 的 i-ResNet 按题名、作者和机制消歧。"
+    },
+    {
+      "id": "exploding-inverses-2021",
+      "title": "Understanding and Mitigating Exploding Inverses in Invertible Neural Networks",
+      "title_local": "理解并缓解可逆网络中的爆炸逆映射",
+      "short_title": "Exploding Inverses",
+      "year": 2021,
+      "venue": "AISTATS 2021",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Jens Behrmann",
+        "Paul Vicol",
+        "Kuan-Chieh Wang",
+        "Roger Grosse",
+        "Jörn-Henrik Jacobsen"
+      ],
+      "primary_route": "reversible-connections",
+      "routes": [
+        "reversible-connections",
+        "mechanism-limits"
+      ],
+      "level": 3,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D3",
+        "P": "P3",
+        "Q": "Q3"
+      },
+      "relevance_rank": 43,
+      "elevator": "测量局部 Jacobian/逆条件数，构造扰动压力测试，并用 finite-difference/flow 正则约束。",
+      "problem": "数学上一一映射仍可能因巨大逆条件数在浮点数中失效。",
+      "mechanism": "测量局部 Jacobian/逆条件数，构造扰动压力测试，并用 finite-difference/flow 正则约束。",
+      "mechanism_steps": [
+        "估计逆条件数",
+        "扰动输出",
+        "测重构与梯度误差",
+        "加入稳定正则"
+      ],
+      "evidence": [
+        "无正则 additive 模型可有 4.3×10^-2 重构误差与 7.2×10^4 条件数。",
+        "affine 版本可为 Inf 和 8.6×10^14。",
+        "正则后误差约 10^-3 且精度基本保持。"
+      ],
+      "limitations": [
+        "估计与正则增加计算。",
+        "不是所有可逆网的统一最坏界。"
+      ],
+      "implications": [
+        "把代数可逆、数值条件与系统可靠性分开。"
+      ],
+      "evidence_locations": [
+        "理论/压力测试",
+        "Table 2",
+        "memory-saving gradients"
+      ],
+      "tags": [
+        "条件数",
+        "数值反证"
+      ],
+      "paper_url": "https://proceedings.mlr.press/v130/behrmann21a.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "invertible-resnet-2019",
+      "title": "Invertible Residual Networks",
+      "title_local": "可逆残差网络",
+      "short_title": "i-ResNet",
+      "year": 2019,
+      "venue": "ICML 2019",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Jens Behrmann",
+        "Will Grathwohl",
+        "Ricky T. Q. Chen",
+        "David Duvenaud",
+        "Jörn-Henrik Jacobsen"
+      ],
+      "primary_route": "reversible-connections",
+      "routes": [
+        "reversible-connections"
+      ],
+      "level": 3,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P3",
+        "Q": "Q2"
+      },
+      "relevance_rank": 42,
+      "elevator": "约束 Lip(g)<1，Banach 定理保证 I+g 可逆；固定点迭代求逆并近似 logdet。",
+      "problem": "希望保留单支路 x+g(x)，而非 coupling，同时保证可逆。",
+      "mechanism": "约束 Lip(g)<1，Banach 定理保证 I+g 可逆；固定点迭代求逆并近似 logdet。",
+      "mechanism_steps": [
+        "谱归一化约束 Lip(g)",
+        "保留 x+g(x)",
+        "固定点求逆",
+        "近似 logdet"
+      ],
+      "evidence": [
+        "理论给充分条件和逆稳定界。",
+        "更强约束常损分类精度。",
+        "逆约为 forward 的 5–20 倍，生成结果也未全面最优。"
+      ],
+      "limitations": [
+        "Lip<1 保守且限制表达。",
+        "迭代逆昂贵，logdet 截断有偏。"
+      ],
+      "implications": [
+        "使收缩、表达与反演成本显式化。"
+      ],
+      "evidence_locations": [
+        "可逆定理",
+        "Tables 2、4",
+        "反演时间"
+      ],
+      "tags": [
+        "Lipschitz",
+        "固定点逆"
+      ],
+      "paper_url": "https://proceedings.mlr.press/v97/behrmann19a.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "revnet-2017",
+      "title": "The Reversible Residual Network: Backpropagation Without Storing Activations",
+      "title_local": "可逆残差网络：无需存储激活的反向传播",
+      "short_title": "RevNet",
+      "year": 2017,
+      "venue": "NeurIPS 2017",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Aidan N. Gomez",
+        "Mengye Ren",
+        "Raquel Urtasun",
+        "Roger B. Grosse"
+      ],
+      "primary_route": "reversible-connections",
+      "routes": [
+        "reversible-connections"
+      ],
+      "level": 3,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P3",
+        "Q": "Q3"
+      },
+      "relevance_rank": 39,
+      "elevator": "拆通道做两路 additive coupling，反向按相反顺序重构，只存不可逆边界。",
+      "problem": "普通 ResNet 激活内存随深度增长，而 x+F(x) 一般无闭式逆。",
+      "mechanism": "拆通道做两路 additive coupling，反向按相反顺序重构，只存不可逆边界。",
+      "mechanism_steps": [
+        "拆成两路",
+        "y1=x1+F(x2)",
+        "y2=x2+G(y1)",
+        "反向闭式重构"
+      ],
+      "evidence": [
+        "不要求 F/G 可逆。",
+        "ImageNet ResNet-101 error 23.01，RevNet-104 23.10。",
+        "理论额外计算约 33%，通用实现约 1.5–2 倍。"
+      ],
+      "limitations": [
+        "下采样、首尾层不可逆。",
+        "同参数不等于同架构，浮点误差会积累。"
+      ],
+      "implications": [
+        "把 residual connection 扩展为内存系统设计。"
+      ],
+      "evidence_locations": [
+        "§2 方程",
+        "CIFAR Tables 3",
+        "ImageNet Table 4"
+      ],
+      "tags": [
+        "加性耦合",
+        "内存"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper/2017/hash/f9be311e65d81a9ad8150a60844bb94c-Abstract.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "invertible-approximation-limits-2020",
+      "title": "Approximation Capabilities of Neural ODEs and Invertible Residual Networks",
+      "title_local": "神经 ODE 与可逆残差网络的逼近能力",
+      "short_title": "Invertible approximation limits",
+      "year": 2020,
+      "venue": "ICML 2020",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Han Zhang",
+        "Xi Gao",
+        "Jacob Unterman",
+        "Tom Arodz"
+      ],
+      "primary_route": "mechanism-limits",
+      "routes": [
+        "mechanism-limits",
+        "reversible-connections"
+      ],
+      "level": 0,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 52,
+      "elevator": "用 homeomorphism 构造同维不可逼近目标，并证明维度增广或末端 linear cap 可解除限制。",
+      "problem": "信息保持是否必然不损表达能力？",
+      "mechanism": "用 homeomorphism 构造同维不可逼近目标，并证明维度增广或末端 linear cap 可解除限制。",
+      "mechanism_steps": [
+        "识别拓扑限制",
+        "构造不可逼近映射",
+        "增加维度",
+        "或加非可逆线性层"
+      ],
+      "evidence": [
+        "给出同维限制与 2p 维增广充分性定理。",
+        "实验演示增广/linear cap 解除失败。"
+      ],
+      "limitations": [
+        "存在性理论不直接预测有限数据精度。",
+        "linear cap 使端到端不再可逆。"
+      ],
+      "implications": [
+        "与 exploding inverse 构成表达和数值双边界。"
+      ],
+      "evidence_locations": [
+        "主要定理",
+        "增广实验"
+      ],
+      "tags": [
+        "拓扑限制",
+        "维度增广"
+      ],
+      "paper_url": "https://proceedings.mlr.press/v119/zhang20h.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "shortcut-importance-2019",
+      "title": "Towards Understanding the Importance of Shortcut Connections in Residual Networks",
+      "title_local": "理解残差网络中捷径连接的重要性",
+      "short_title": "Shortcut convergence theory",
+      "year": 2019,
+      "venue": "NeurIPS 2019",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Tianyi Liu",
+        "Minshuo Chen",
+        "Mo Zhou",
+        "Simon S. Du",
+        "Enlu Zhou",
+        "Tuo Zhao"
+      ],
+      "primary_route": "mechanism-limits",
+      "routes": [
+        "mechanism-limits"
+      ],
+      "level": 0,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 50,
+      "elevator": "在二层非重叠卷积 ResNet 中分析伪局部最优，证明特定归一化与首层零初始化下梯度下降全局收敛。",
+      "problem": "希望给 shortcut 改变非凸优化的可证明解释。",
+      "mechanism": "在二层非重叠卷积 ResNet 中分析伪局部最优，证明特定归一化与首层零初始化下梯度下降全局收敛。",
+      "mechanism_steps": [
+        "构造受限模型",
+        "识别伪局部最优",
+        "首层置零并归一化",
+        "证明收敛"
+      ],
+      "evidence": [
+        "正式定理给多项式时间全局收敛。",
+        "数值实验支持受限模型。"
+      ],
+      "limitations": [
+        "只有两层且卷积不重叠。",
+        "依赖特定初始化/归一化，不能外推真实深网。"
+      ],
+      "implications": [
+        "提供严格但窄范围的优化证据。"
+      ],
+      "evidence_locations": [
+        "主要定理",
+        "数值实验"
+      ],
+      "tags": [
+        "收敛理论",
+        "外推边界"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper/2019/hash/7716d0fc31636914783865d34f6cdfd5-Abstract.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "gauss-newton-conditioning-2024",
+      "title": "Theoretical characterisation of the Gauss-Newton conditioning in Neural Networks",
+      "title_local": "神经网络中 Gauss-Newton 条件性的理论刻画",
+      "short_title": "Gauss-Newton conditioning",
+      "year": 2024,
+      "venue": "NeurIPS 2024",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Jim Zhao",
+        "Sidak Pal Singh",
+        "Aurelien Lucchi"
+      ],
+      "primary_route": "mechanism-limits",
+      "routes": [
+        "mechanism-limits",
+        "residual-scaling"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 54,
+      "elevator": "在线性网络中把 residual layer 写成 W+βI，分析谱平移和 GN 条件数界，并延伸到卷积 Toeplitz。",
+      "problem": "shortcut 如何改变二阶曲率代理条件数仍缺少可计算理论。",
+      "mechanism": "在线性网络中把 residual layer 写成 W+βI，分析谱平移和 GN 条件数界，并延伸到卷积 Toeplitz。",
+      "mechanism_steps": [
+        "矩阵化深网",
+        "写成 W+βI",
+        "分析谱平移",
+        "推导 GN 条件数",
+        "延伸卷积"
+      ],
+      "evidence": [
+        "给任意深线性网紧界和 residual/convolution 延伸。",
+        "ResNet-20 只在约 1000 个 CIFAR 样本上诊断。"
+      ],
+      "limitations": [
+        "改善界依赖奇异向量假设。",
+        "线性/小样本不能外推大规模准确率。"
+      ],
+      "implications": [
+        "增加曲率条件数视角并明确证据边界。"
+      ],
+      "evidence_locations": [
+        "residual 定理",
+        "卷积延伸",
+        "CIFAR 子集图"
+      ],
+      "tags": [
+        "Gauss-Newton",
+        "谱平移"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper_files/paper/2024/file/d067d16e3e5fe8fa8a3e62909907659a-Paper-Conference.pdf",
+      "source_note": "NeurIPS 正式全文；题名从初筛 spectrum 纠正为 conditioning。"
+    },
+    {
+      "id": "residual-alignment-2023",
+      "title": "Residual Alignment: Uncovering the Mechanisms of Residual Networks",
+      "title_local": "残差对齐：揭示残差网络机制",
+      "short_title": "Residual Alignment",
+      "year": 2023,
+      "venue": "NeurIPS 2023",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Jianing Li",
+        "Vardan Papyan"
+      ],
+      "primary_route": "mechanism-limits",
+      "routes": [
+        "mechanism-limits"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 53,
+      "elevator": "线性化 blocks，做 residual Jacobian SVD，测量表示共线、奇异向量对齐、低秩与随深度缩放。",
+      "problem": "需要训练后几何描述解释 branches 如何协同。",
+      "mechanism": "线性化 blocks，做 residual Jacobian SVD，测量表示共线、奇异向量对齐、低秩与随深度缩放。",
+      "mechanism_steps": [
+        "线性化 block",
+        "Jacobian SVD",
+        "测跨层对齐",
+        "移除 skip 反事实"
+      ],
+      "evidence": [
+        "RA1–RA4 在全连接/卷积、多深度宽度和多数据集出现。",
+        "移除 skip 后现象停止，并在特定数学模型中证明。"
+      ],
+      "limitations": [
+        "作者定义的现象不是所有成功 ResNet 的充要条件。",
+        "缺少跨连接方法的独立统一复现。"
+      ],
+      "implications": [
+        "提供 2023 年训练后几何视角。"
+      ],
+      "evidence_locations": [
+        "RA1–RA4",
+        "Jacobian/表示实验",
+        "no-skip 对照"
+      ],
+      "tags": [
+        "Jacobian",
+        "训练后几何"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/b3f48945f6fb402b4b5cdcf490e72847-Abstract-Conference.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "iterative-inference-2018",
+      "title": "Residual Connections Encourage Iterative Inference",
+      "title_local": "残差连接促进迭代推断",
+      "short_title": "Iterative Inference",
+      "year": 2018,
+      "venue": "ICLR 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Stanisław Jastrzębski",
+        "Devansh Arpit",
+        "Nicolas Ballas",
+        "Vikas Verma",
+        "Tong Che",
+        "Yoshua Bengio"
+      ],
+      "primary_route": "mechanism-limits",
+      "routes": [
+        "mechanism-limits"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 49,
+      "elevator": "测量残差更新与损失负梯度的对齐，区分早层表征学习与后层迭代细化，并测试共享权重。",
+      "problem": "路径集成不是唯一解释，需要检验 blocks 是否逐步修正表征。",
+      "mechanism": "测量残差更新与损失负梯度的对齐，区分早层表征学习与后层迭代细化，并测试共享权重。",
+      "mechanism_steps": [
+        "测残差方向",
+        "与负梯度比较",
+        "区分层级角色",
+        "共享权重反事实"
+      ],
+      "evidence": [
+        "CIFAR 中高层更像迭代细化。",
+        "朴素共享会表征膨胀并伤害泛化。"
+      ],
+      "limitations": [
+        "现象依数据和架构，不是普遍定理。",
+        "共享负结果不等于所有循环式架构失败。"
+      ],
+      "implications": [
+        "给出行为解释及其直接反例。"
+      ],
+      "evidence_locations": [
+        "理论形式化",
+        "中间表征",
+        "共享消融"
+      ],
+      "tags": [
+        "迭代细化",
+        "共享反例"
+      ],
+      "paper_url": "https://openreview.net/forum?id=SJa9iHgAZ",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "skip-singularities-2018",
+      "title": "Skip Connections Eliminate Singularities",
+      "title_local": "跳跃连接消除奇异性",
+      "short_title": "Singularity analysis",
+      "year": 2018,
+      "venue": "ICLR 2018",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Emin Orhan",
+        "Xaq Pitkow"
+      ],
+      "primary_route": "mechanism-limits",
+      "routes": [
+        "mechanism-limits"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 48,
+      "elevator": "分析重叠、消除和线性依赖奇异性；shortcut 打破对称并让初始化远离这些结构。",
+      "problem": "不可辨识性的退化流形会减慢学习。",
+      "mechanism": "分析重叠、消除和线性依赖奇异性；shortcut 打破对称并让初始化远离这些结构。",
+      "mechanism_steps": [
+        "识别三类奇异性",
+        "分析对称破坏",
+        "测局部几何",
+        "真实数据核对"
+      ],
+      "evidence": [
+        "简化模型与深网实验支持假设。",
+        "典型初始化被推离奇异结构。"
+      ],
+      "limitations": [
+        "不能泛化为消除所有优化障碍。",
+        "与梯度/信号解释并不互斥。"
+      ],
+      "implications": [
+        "提供损失面几何视角。"
+      ],
+      "evidence_locations": [
+        "奇异性分类",
+        "理论",
+        "真实数据实验"
+      ],
+      "tags": [
+        "损失面",
+        "不可辨识性"
+      ],
+      "paper_url": "https://openreview.net/forum?id=HkwBEMWCZ",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "fractalnet-2017",
+      "title": "FractalNet: Ultra-Deep Neural Networks without Residuals",
+      "title_local": "FractalNet：无残差的超深网络",
+      "short_title": "FractalNet",
+      "year": 2017,
+      "venue": "ICLR 2017",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Gustav Larsson",
+        "Michael Maire",
+        "Gregory Shakhnarovich"
+      ],
+      "primary_route": "mechanism-limits",
+      "routes": [
+        "mechanism-limits",
+        "stochastic-paths",
+        "aggregation-topology"
+      ],
+      "level": 1,
+      "tier": "background",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q1"
+      },
+      "relevance_rank": 46,
+      "elevator": "递归构造多长度路径，join 取均值，训练用 local/global drop-path。",
+      "problem": "需要区分 residual addition 与更一般短路径脚手架。",
+      "mechanism": "递归构造多长度路径，join 取均值，训练用 local/global drop-path。",
+      "mechanism_steps": [
+        "递归分形路径",
+        "join 均值",
+        "drop-path 训练",
+        "测试完整图或单列"
+      ],
+      "evidence": [
+        "CIFAR 表明无 ResNet identity addition 也能训练深网。",
+        "单列结果支持多路径脚手架解释。"
+      ],
+      "limitations": [
+        "仍含丰富短路径，不是 plain 串行网。",
+        "宽度、计算和显存增加。"
+      ],
+      "implications": [
+        "反证残差表征是深度训练唯一必要条件。"
+      ],
+      "evidence_locations": [
+        "§2–3",
+        "完整图/单列实验"
+      ],
+      "tags": [
+        "直接替代",
+        "反事实"
+      ],
+      "paper_url": "https://openreview.net/forum?id=S1VaB4cex",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "shattered-gradients-2017",
+      "title": "The Shattered Gradients Problem: If resnets are the answer, then what is the question?",
+      "title_local": "破碎梯度问题：如果 ResNet 是答案，问题是什么？",
+      "short_title": "Shattered Gradients",
+      "year": 2017,
+      "venue": "ICML 2017",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "David Balduzzi",
+        "Marcus Frean",
+        "Lennox Leary",
+        "J. P. Lewis",
+        "Kurt Wan-Duo Ma",
+        "Brian McWilliams"
+      ],
+      "primary_route": "mechanism-limits",
+      "routes": [
+        "mechanism-limits"
+      ],
+      "level": 1,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 47,
+      "elevator": "分析相关性随深度衰减；plain 为指数，skip 架构更接近次线性，并给 looks-linear 初始化对照。",
+      "problem": "梯度范数正常时，不同输入的梯度相关性仍可能像白噪声般消失。",
+      "mechanism": "分析相关性随深度衰减；plain 为指数，skip 架构更接近次线性，并给 looks-linear 初始化对照。",
+      "mechanism_steps": [
+        "定义破碎相关性",
+        "推导深度衰减",
+        "比较有无 skip",
+        "卷积/全连接核对"
+      ],
+      "evidence": [
+        "理论与实验均显示 skip 更抗梯度破碎。",
+        "初步 LL 初始化可训练更深无 skip 网络。"
+      ],
+      "limitations": [
+        "偏初始化与理想随机网络。",
+        "不证明训练全程或泛化只由该机制解释。"
+      ],
+      "implications": [
+        "把优势从梯度幅度扩展到方向结构。"
+      ],
+      "evidence_locations": [
+        "主要理论",
+        "全连接/卷积实验"
+      ],
+      "tags": [
+        "梯度相关性"
+      ],
+      "paper_url": "https://proceedings.mlr.press/v70/balduzzi17b.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "diracnet-2018",
+      "title": "DiracNets: Training Very Deep Neural Networks Without Skip-Connections",
+      "title_local": "DiracNet：无需跳跃连接训练超深网络",
+      "short_title": "DiracNet",
+      "year": 2018,
+      "venue": "ICLR 2018 submission / arXiv",
+      "status": "preprint",
+      "source_type": "paper",
+      "authors": [
+        "Sergey Zagoruyko",
+        "Nikos Komodakis"
+      ],
+      "primary_route": "mechanism-limits",
+      "routes": [
+        "mechanism-limits",
+        "residual-scaling"
+      ],
+      "level": 2,
+      "tier": "background",
+      "evidence_level": "C",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P1",
+        "Q": "Q2"
+      },
+      "relevance_rank": 51,
+      "elevator": "把可学习倍率乘 Dirac identity 加剩余卷积折入卷积核，从近恒等开始但无单独 shortcut。",
+      "problem": "需要区分近恒等参数化与显式加法捷径。",
+      "mechanism": "把可学习倍率乘 Dirac identity 加剩余卷积折入卷积核，从近恒等开始但无单独 shortcut。",
+      "mechanism_steps": [
+        "嵌入 Dirac identity",
+        "学习倍率与剩余核",
+        "堆叠无 shortcut 深网",
+        "与 ResNet 比较"
+      ],
+      "evidence": [
+        "ImageNet DiracNet-18/34 error 30.37/27.79，对应 ResNet 29.62/27.17。",
+        "CIFAR 上 ResNet 参数效率也更好。"
+      ],
+      "limitations": [
+        "只核得预印本/投稿状态。",
+        "卷积参数化不复现加法路径组合。"
+      ],
+      "implications": [
+        "反证显式 shortcut 是唯一方式，同时保留其略逊基线。"
+      ],
+      "evidence_locations": [
+        "参数化",
+        "ImageNet 表",
+        "CIFAR 效率"
+      ],
+      "tags": [
+        "无显式捷径",
+        "负面对照"
+      ],
+      "paper_url": "https://arxiv.org/abs/1706.00388",
+      "source_note": "按预印本收录，不标成已确认 ICLR 正式论文。"
+    },
+    {
+      "id": "ensemble-view-2016",
+      "title": "Residual Networks Behave Like Ensembles of Relatively Shallow Networks",
+      "title_local": "残差网络表现得像相对浅层网络的集合",
+      "short_title": "Unraveled ensemble view",
+      "year": 2016,
+      "venue": "NeurIPS 2016",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Andreas Veit",
+        "Michael J. Wilber",
+        "Serge Belongie"
+      ],
+      "primary_route": "mechanism-limits",
+      "routes": [
+        "mechanism-limits",
+        "stochastic-paths"
+      ],
+      "level": 2,
+      "tier": "core",
+      "evidence_level": "A",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P2",
+        "Q": "Q2"
+      },
+      "relevance_rank": 45,
+      "elevator": "展开 identity/residual 路径，并用删除、重排和梯度长度分布测试 ensemble-like 行为。",
+      "problem": "需要解释极深网络的有效路径长度与路径依赖。",
+      "mechanism": "展开 identity/residual 路径，并用删除、重排和梯度长度分布测试 ensemble-like 行为。",
+      "mechanism_steps": [
+        "展开多路径",
+        "删除块",
+        "重排块",
+        "统计梯度路径长度"
+      ],
+      "evidence": [
+        "ResNet-110 大部分梯度来自约 10–34 层路径。",
+        "删除块使性能渐进下降。",
+        "正式评审指出非线性下“指数独立集成”等价过强。"
+      ],
+      "limitations": [
+        "共享权重和非线性使路径不独立。",
+        "lesion 不能证明唯一机制。"
+      ],
+      "implications": [
+        "为随机路径提供背景并限制“指数集成”叙述。"
+      ],
+      "evidence_locations": [
+        "路径展开",
+        "lesion/reordering",
+        "梯度图",
+        "官方评审"
+      ],
+      "tags": [
+        "路径展开",
+        "解释边界"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper_files/paper/2016/hash/37bc2f75bf1bcfe8450a1a41c200364c-Abstract.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。"
+    },
+    {
+      "id": "residual-distillation-2020",
+      "title": "Residual Distillation: Towards Portable Deep Neural Networks without Shortcuts",
+      "title_local": "残差蒸馏：迈向无捷径的可部署深网",
+      "short_title": "Residual Distillation",
+      "year": 2020,
+      "venue": "NeurIPS 2020",
+      "status": "peer-reviewed",
+      "source_type": "paper",
+      "authors": [
+        "Guilin Li",
+        "Junlei Zhang",
+        "Yunhe Wang",
+        "Chuanjian Liu",
+        "Matthias Tan",
+        "Yunfeng Lin",
+        "Wei Zhang",
+        "Jiashi Feng",
+        "Tong Zhang"
+      ],
+      "primary_route": "mechanism-limits",
+      "routes": [
+        "mechanism-limits",
+        "adaptive-routing"
+      ],
+      "level": 3,
+      "tier": "bridge",
+      "evidence_level": "B",
+      "source_tier": "T1",
+      "verification_state": "full-text-checked",
+      "evidence_vector": {
+        "V": "V3",
+        "D": "D2",
+        "P": "P3",
+        "Q": "Q1"
+      },
+      "relevance_rank": 55,
+      "elevator": "联合训练 ResNet 教师与 plain CNN，跨模型传递特征和混合梯度，部署只留学生。",
+      "problem": "shortcut 延长推理期特征生命周期，能否只在训练时借用其优化优势？",
+      "mechanism": "联合训练 ResNet 教师与 plain CNN，跨模型传递特征和混合梯度，部署只留学生。",
+      "mechanism_steps": [
+        "构建教师/学生",
+        "传递中间特征",
+        "混合梯度",
+        "部署 plain CNN"
+      ],
+      "evidence": [
+        "作者报告 ImageNet/CIFAR 达 ResNet 基线。",
+        "约 1.4× 加速、1.25× 内存降低，并迁移 MIT67/Caltech101。",
+        "称 ResNet-50 shortcut 占约 40% 推理特征内存。"
+      ],
+      "limitations": [
+        "不证明 plain net 从头训练可替代 ResNet。",
+        "系统数字来自作者，缺独立统一复现。"
+      ],
+      "implications": [
+        "拆开训练需要连接与部署需要连接。"
+      ],
+      "evidence_locations": [
+        "方法框架",
+        "ImageNet/CIFAR",
+        "移动效率表",
+        "迁移实验"
+      ],
+      "tags": [
+        "训练部署解耦",
+        "系统指标"
+      ],
+      "paper_url": "https://proceedings.neurips.cc/paper/2020/hash/657b96f0592803e25a4f07166fff289a-Abstract.html",
+      "source_note": "已回到一手正文核验机制、结果与边界。",
+      "code_url": "https://github.com/leoozy/JointRD_Neurips2020"
+    }
+  ],
+  "stats": {
+    "paper_count": 55,
+    "route_count": 7,
+    "level_count": 4,
+    "nonempty_cluster_count": 20,
+    "year_min": 2015,
+    "year_max": 2025,
+    "cluster_counts": [
+      {
+        "route": "adaptive-routing",
+        "level": 1,
+        "count": 1
+      },
+      {
+        "route": "adaptive-routing",
+        "level": 2,
+        "count": 5
+      },
+      {
+        "route": "adaptive-routing",
+        "level": 3,
+        "count": 1
+      },
+      {
+        "route": "aggregation-topology",
+        "level": 2,
+        "count": 7
+      },
+      {
+        "route": "aggregation-topology",
+        "level": 3,
+        "count": 2
+      },
+      {
+        "route": "identity-projection",
+        "level": 2,
+        "count": 3
+      },
+      {
+        "route": "identity-projection",
+        "level": 3,
+        "count": 3
+      },
+      {
+        "route": "mechanism-limits",
+        "level": 0,
+        "count": 2
+      },
+      {
+        "route": "mechanism-limits",
+        "level": 1,
+        "count": 6
+      },
+      {
+        "route": "mechanism-limits",
+        "level": 2,
+        "count": 2
+      },
+      {
+        "route": "mechanism-limits",
+        "level": 3,
+        "count": 1
+      },
+      {
+        "route": "residual-scaling",
+        "level": 0,
+        "count": 1
+      },
+      {
+        "route": "residual-scaling",
+        "level": 1,
+        "count": 5
+      },
+      {
+        "route": "residual-scaling",
+        "level": 2,
+        "count": 4
+      },
+      {
+        "route": "residual-scaling",
+        "level": 3,
+        "count": 2
+      },
+      {
+        "route": "reversible-connections",
+        "level": 1,
+        "count": 1
+      },
+      {
+        "route": "reversible-connections",
+        "level": 2,
+        "count": 2
+      },
+      {
+        "route": "reversible-connections",
+        "level": 3,
+        "count": 3
+      },
+      {
+        "route": "stochastic-paths",
+        "level": 1,
+        "count": 3
+      },
+      {
+        "route": "stochastic-paths",
+        "level": 2,
+        "count": 1
+      }
+    ]
+  }
+}
